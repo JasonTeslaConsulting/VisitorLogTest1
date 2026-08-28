@@ -1,0 +1,47 @@
+# Docker build context excludes.
+
+#
+
+# docker/Dockerfile and docker/Dockerfile.nginx both `COPY . .` from the repo
+
+# root, so anything not listed here is uploaded to the daemon and can end up in
+
+# the image. Without this file the context carries node_modules (host binaries,
+
+# wrong platform), a stale dist/, and the entire .git history.
+
+#
+
+# DO NOT exclude public/ or docker/. Vite copies public/ into dist/, which is how
+
+# /config/app.json reaches the running container — excluding it builds fine and
+
+# then fails at boot in appConfig.initialize() (see docs/DECISIONS.md,
+
+# 2026-08-17). Dockerfile.nginx COPYs docker/nginx.conf out of the context.
+
+node_modules
+dist
+dist-ssr
+.git
+supabase/.temp
+
+# Local and editor state
+
+*.local
+*.log
+.codegraph
+.vscode
+.idea
+.DS_Store
+
+# Not needed to build the app
+
+.claude
+.agents
+.github
+.gitea
+docs
+*.md
+.dockerignore
+dockerbuild.bat

@@ -1,0 +1,29 @@
+/* ============================================================================
+   Entry stylesheet — app-owned, and deliberately almost empty.
+
+   Three lines of real content, in an order CSS forces on us:
+
+   1. Font URLs first. `@import url()` must precede every other statement in a
+      stylesheet, and these are brand choices, which is why they sit in this
+      app-owned file rather than in the framework's. Their matching
+      --font-sans / --font-heading / --font-mono values are in ./theme.css.
+
+   2. The framework's structure second — because it carries
+      `@import "tailwindcss"`, which must come before any `@layer base` block.
+      Loading ./theme.css first would create the `base` layer before Tailwind
+      declares its layer order, silently changing the cascade. Loaded through
+      the `@framework` alias (see vite.config.ts / tsconfig) since the
+      framework/app split moved this file's source under platform/.
+
+   3. This portal's brand values last.
+
+   Nothing else belongs in this file. Add tokens to ./theme.css, and structure
+   upstream in the framework.
+   ============================================================================ */
+
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap");
+
+@import "@framework/styles/framework.css";
+@import "./theme.css";

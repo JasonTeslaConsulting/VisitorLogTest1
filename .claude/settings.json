@@ -1,0 +1,49 @@
+{
+  "permissions": {
+    "allow": ["Bash(npx shadcn@latest add *)", "Bash(npm run *)"],
+    "deny": ["Bash(rm -rf *)", "Bash(rimraf *)", "Bash(npx rimraf *)"]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/session-context.mjs",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/advise-unsaved-guard.mjs",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/guard-generated.mjs",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "node .claude/hooks/guard-framework.mjs",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

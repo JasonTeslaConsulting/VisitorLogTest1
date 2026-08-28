@@ -1,0 +1,344 @@
+/* ============================================================================
+   THIS PORTAL'S BRAND VALUES — app-owned.
+
+   Every CSS custom-property *value* the design system uses lives here. The
+   framework owns the machinery that maps these onto Tailwind utilities
+   (src/styles/framework.css's `@theme inline` block) but never the values, so a
+   portal can be rebranded without touching a framework file — and a framework
+   update can never conflict with a brand decision.
+
+   This is the only file `.claude/skills/plan-design/SKILL.md` rewrites, plus the
+   font URLs at the top of src/index.css. Editing rules — HSL-only, both modes
+   for mode-dependent tokens, the ramp-promotion procedure — are unchanged and
+   live in `.claude/rules/index-css-rules.md`.
+
+   Loaded after framework.css (see src/index.css for why the order matters).
+   ============================================================================ */
+
+@layer base {
+  :root {
+    --background: 203 27% 94%;
+    --foreground: 0 0% 32%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 32%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 32%;
+
+    --primary: 15 78% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 0%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 0 0% 97%;
+    --muted-foreground: 0 0% 44%;
+
+    --accent: 15 78% 93%;
+    --accent-foreground: 15 79% 22%;
+
+    --destructive: 0 79.1% 51.2%;
+    --destructive-foreground: 0 0% 100%;
+    /* Destructive button hover target (DESIGN.md §6 Buttons — Hover). Darkens in light mode,
+       lightens in dark — same precedent --primary-hover set, not the old blanket "filled buttons
+       get lighter" rule §6 stated before that changed. */
+    --destructive-hover: 0 79.1% 44%;
+
+    /* Border role (DESIGN.md §2.3 --color-card-border) — also the single token for functional
+       dividers (table lines, nav divider, side-sheet edge, form footer divider). Previously split
+       into --border/--line as separate tokens; merged back since they never diverged and the split
+       created contradictory guidance (see index-css-rules.md history). See tailwind.md. */
+    --border: 214 30% 91%;
+    /* Border-dark role (DESIGN.md §2.3 --color-border-dark) — neutral-300. Distinct from --border
+       (a much lighter hairline used for card edges and dividers): this is the visible resting-state
+       border on form fields. See tailwind.md. */
+    --border-dark: 0 0% 75%;
+    /* Exception to the bare-HSL-triplet convention: the reference's own --input is literally
+       transparent in light mode, not a color — the @theme inline block below passes this one
+       through raw (no hsl() wrapper) instead of the usual pattern. See tailwind.md. */
+    --input: transparent;
+    --input-background: 0 0% 97%;
+    --ring: 15 78% 50%;
+
+    /* Functional colors — success/warning/info, additive to the shadcn set (DESIGN.md §2.5) */
+    --success: 157.5 90.6% 33.5%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 36.4 100% 46.9%;
+    /* Warning bg is bright at all lightness steps in both modes — dark text stays fixed rather than flipping with theme */
+    --warning-foreground: 38 92% 15%;
+
+    /* Also doubles as Link Blue (DESIGN.md §2.3) — anchor links in prose. Table entity links use
+       --primary instead (build-datatable/SKILL.md). */
+    --info: 214.4 100% 32.2%;
+    --info-foreground: 0 0% 100%;
+
+    /* Text-weight variants of --warning/--success (DESIGN.md §2.3) — the base fills are too light
+       for body text (--warning is 2.26:1 on white); these are darkened until they clear WCAG AA
+       (--warning-text 5.08:1, --success-text 5.35:1) for wording on a --card/white surface. */
+    --warning-text: 22 92% 37%;
+    --success-text: 158 78% 27%;
+
+    /* Disabled text/icon role (DESIGN.md §2.3) — distinct from --control-disabled (a disabled checkbox's fill); same
+       value as both today but a different job, kept separate so they can diverge later. */
+    --disabled-text: 0 0% 75%;
+
+    /* Button disabled treatment (DESIGN.md §6 Buttons — Disabled) — flat neutral-600, replaces
+       the button's identity color entirely rather than dimming it. Same value in both modes
+       (mode-invariant, derived from the neutral-600 ramp step), so :root only. */
+    --button-disabled: 0 0% 44%;
+
+    /* Selection control (checkbox/radio/switch) disabled treatment (DESIGN.md's Selection
+       controls section) — lighter neutrals than the button spec since these are small shape
+       fills with no painted text. Mode-invariant except --control-disabled-knob (see .dark). */
+    --control-disabled: 0 0% 75%; /* neutral-300 — disabled box/border/track */
+    --control-disabled-icon: 0 0% 64%; /* neutral-400 — disabled checked icon/dot */
+    --control-disabled-knob: 0 0% 93%; /* neutral-100 — disabled switch knob */
+
+    /* Switch "off" track — was --muted (97% lightness in light mode), nearly invisible against
+       the page background. Darker, clearly-gray neutral-400 step so the off state reads as a
+       real track, not blank space. Distinct from --control-disabled (75%) so a merely-off switch
+       still looks more present than a disabled one. */
+    --switch-track-off: 0 0% 64%;
+
+    /* Secondary button hover target (DESIGN.md §6 Buttons — Hover: "Background lightens from
+       #000000 to hsl(0, 0%, 22%)"). Light-mode only — dark mode instead reduces --secondary's
+       own (already near-white) value to ~90% opacity on hover, so no .dark override needed. */
+    --secondary-hover: 0 0% 22%;
+
+    /* Primary button hover target (DESIGN.md §2.3/§6 Buttons — Hover: darkens to primary-600 in
+       light mode). Promoted from the reference-only primary ramp per index-css-rules.md's
+       promotion procedure, since DESIGN.md assigns this ramp step to a real semantic role. Dark
+       mode keeps the opposite direction (lightens) — the primary fill sits on a dark card there,
+       so darkening on hover would read as the button receding. */
+    --primary-hover: 15 78% 44%;
+
+    /* Highlight role (DESIGN.md §2.3) — a callout background within a --card surface that
+       needs to visually stand apart (e.g. a leading instructional banner, table row hover,
+       selection highlights), distinct from --muted/--input-background (table zebra striping). */
+    --highlight: 210 40% 96%;
+
+    /* Type scale (DESIGN.md §3, M3 naming) — mode-invariant, only needs :root.
+       Each size carries a `--text-X--line-height` companion, which is the Tailwind v4 convention
+       that makes one class (`text-title-lg`) set BOTH size and leading. Weight stays a separate
+       concern per DESIGN.md §3's own Weight column — pair these with font-bold/semibold/medium.
+       rem rather than the spec's px so the scale respects a reader's browser font size.
+       --type-body-emphasis has no token on purpose: it inherits its size by definition. */
+    --text-display-lg: 3.5625rem; /* 57px */
+    --text-display-lg--line-height: 4rem; /* 64px */
+    --text-headline-lg: 2rem; /* 32px */
+    --text-headline-lg--line-height: 2.5rem; /* 40px */
+    --text-headline-md: 1.75rem; /* 28px */
+    --text-headline-md--line-height: 2.25rem; /* 36px */
+    --text-title-lg: 1.375rem; /* 22px */
+    --text-title-lg--line-height: 1.75rem; /* 28px */
+    --text-subtitle: 1.125rem; /* 18px */
+    --text-subtitle--line-height: 1.625rem; /* 26px */
+    --text-body-lg: 1rem; /* 16px */
+    --text-body-lg--line-height: 1.5rem; /* 24px */
+    --text-body-md: 0.875rem; /* 14px */
+    --text-body-md--line-height: 1.25rem; /* 20px */
+    --text-button: 0.875rem; /* 14px */
+    --text-button--line-height: 1.25rem; /* 20px */
+    --text-label-sm: 0.6875rem; /* 11px */
+    --text-label-sm--line-height: 1rem; /* 16px */
+
+    /* Radius scale (DESIGN.md §5) — mode-invariant, only needs :root */
+    --radius-sm: 0.25rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 1rem;
+    /* Bare alias matching --radius-md, kept for parity with the reference — the @theme inline
+       block reads the sm/md/lg tokens directly, not this one */
+    --radius: 0.5rem;
+
+    /* Max content width (DESIGN.md §7) — mode-invariant, only needs :root.
+       The single owner of how wide a page is: PageLayout consumes it via
+       `max-w-(--container-max)` and no template or page sets its own width.
+       Changing this one value rewidths the whole app. */
+    --container-max: 80rem; /* 1280px */
+
+    /* Interactive-card hover/active (DESIGN.md §5's --elevation-2). A border/outline COLOUR
+       change, deliberately not a box-shadow — §6 allows cards no shadow at any state. Declared by
+       reference to --border-dark so it follows dark mode automatically (custom properties resolve
+       at point of use), which is why it needs no .dark entry of its own. Its own name rather than
+       using --border-dark directly, so §5's elevation vocabulary resolves to something real and
+       interactive-hover can diverge from field borders later without touching both. */
+    --elevation-2: var(--border-dark);
+
+    /* Single permitted box-shadow, reserved for dropdowns/modals/popovers (DESIGN.md §5) */
+    --elevation-3: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+
+    --chart-1: 20 82% 50%;
+
+    --chart-2: 25 75% 58%;
+
+    --chart-3: 15 70% 45%;
+
+    --chart-4: 30 80% 55%;
+
+    --chart-5: 0 0% 45%;
+
+    --sidebar: 0 0% 98%;
+
+    --font-sans:
+      "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+
+    --font-heading:
+      "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      sans-serif;
+
+    --font-mono:
+      "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+      "Liberation Mono", "Courier New", monospace;
+
+    --tracking-normal: 0em;
+
+    --spacing: 0.25rem;
+
+    /* 4px base spacing scale (DESIGN.md §5) — REFERENCE ONLY, and inert. These are never mapped
+       into `@theme inline` and never referenced by a component; spacing comes from Tailwind's own
+       `p-*`/`gap-*`/`m-*` scale, which compiles to `calc(var(--spacing) * N)`. Editing these
+       changes nothing. The real lever is `--spacing` directly above. See tailwind.md §2. */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    --space-12: 3rem;
+    --space-16: 4rem;
+
+    /* Full tonal ramps (DESIGN.md §2.2) — reference/derivation only. NOT exposed as Tailwind
+       classes and NEVER referenced directly in components — components use only the semantic
+       tokens above (--primary, --accent, etc.). When a new semantic token is needed later
+       (e.g. an --icon-hover), derive its value from a step here and add it to the @theme inline
+       block as its own named token — do not reach into this ramp from component code. Mode-invariant,
+       :root only. See index-css-rules.md. */
+    --primary-50: 15 75% 97%;
+    --primary-100: 15 78% 93%;
+    --primary-200: 15 79% 85%;
+    --primary-300: 15 78% 75%;
+    --primary-400: 15 78% 62%;
+    --primary-500: 15 78% 50%;
+    --primary-600: 15 78% 44%;
+    --primary-700: 15 78% 38%;
+    --primary-800: 15 78% 30%;
+    --primary-900: 15 79% 22%;
+    --primary-950: 15 79% 15%;
+
+    --neutral-50: 0 0% 97%;
+    --neutral-100: 0 0% 93%;
+    --neutral-200: 0 0% 85%;
+    --neutral-300: 0 0% 75%;
+    --neutral-400: 0 0% 64%;
+    --neutral-500: 0 0% 52%;
+    --neutral-600: 0 0% 44%;
+    --neutral-700: 0 0% 38%;
+    --neutral-800: 0 0% 32%;
+    --neutral-900: 0 0% 22%;
+    --neutral-950: 0 0% 15%;
+  }
+
+  .dark {
+    --background: 221 39% 11%;
+    --foreground: 0 0% 93%;
+
+    --card: 222 32% 16%;
+    --card-foreground: 0 0% 93%;
+
+    --popover: 222 32% 16%;
+    --popover-foreground: 0 0% 93%;
+
+    --primary: 15 80% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 15 80% 68%;
+
+    /* Dark value is extrapolated (no reference provided) — see DESIGN.md §2.3's ⚠ note */
+    --highlight: 222 28% 22%;
+
+    --secondary: 0 0% 96%;
+    /* Dark app-background navy, not black — matches the near-white secondary pill's text to the
+       page's own dark canvas hue rather than a flat black/white inversion */
+    --secondary-foreground: 221 39% 11%;
+
+    --muted: 222 28% 20%;
+    --muted-foreground: 224 10% 70%;
+
+    /* --muted's dark value (20% lightness) sits too close to --background (11%) to read as a
+       track — bumped lighter so the off state stays visible against the dark page. */
+    --switch-track-off: 222 20% 32%;
+
+    /* Duller than the enabled thumb (pure white, 100%) so a disabled switch is visibly less
+       "on" than an enabled one — light mode's 93% already reads fine against its light
+       background, but in dark mode it looked nearly identical to the enabled pure-white thumb. */
+    --control-disabled-knob: 0 0% 82%;
+
+    --accent: 15 78% 30%;
+    --accent-foreground: 15 78% 93%;
+
+    /* ⚠ unconfirmed — re-derived from the new light-mode value per DESIGN.md §2.4's rule
+       (brightened for contrast, same hue), not designer-supplied. */
+    --destructive: 0 79% 63%;
+    --destructive-foreground: 0 0% 100%;
+    /* ⚠ unconfirmed — lightens in dark mode, same reasoning as --primary-hover. */
+    --destructive-hover: 0 79% 71%;
+
+    --border: 222 20% 26%;
+    --border-dark: 221 15% 32%;
+    /* See the :root --input comment — same raw-passthrough exception, full value here since
+       the @theme inline block no longer wraps this one in hsl() */
+    --input: hsl(222 28% 20%);
+    --input-background: 222 28% 20%;
+    --ring: 15 80% 60%;
+
+    /* ⚠ unconfirmed — re-derived, see the --destructive comment above. */
+    --success: 158 75% 52%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 36 100% 58%;
+    --warning-foreground: 38 92% 15%;
+
+    --info: 214 85% 65%;
+    --info-foreground: 0 0% 100%;
+
+    /* ⚠ unconfirmed — text-weight variants re-derived against --card's dark value, not
+       brightness-shifted from the light-mode value (a colour picked for contrast against white
+       is the wrong choice against a dark navy card). */
+    --warning-text: 22 92% 62%;
+    --success-text: 158 60% 55%;
+    --disabled-text: 0 0% 50%;
+
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+    --chart-1: 20 82% 60%;
+    --chart-2: 25 75% 65%;
+    --chart-3: 15 70% 55%;
+    --chart-4: 30 80% 60%;
+    --chart-5: 0 0% 45%;
+    --sidebar: 0 0% 14%;
+  }
+}

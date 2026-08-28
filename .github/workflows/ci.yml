@@ -1,0 +1,113 @@
+# This file must stay byte-identical to .github/workflows/ci.yml — one
+# workflow, kept in two locations so both Gitea Actions and GitHub Actions
+# pick it up. If you edit one, copy the change to the other.
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# A rebase force-push (e.g. an autonomous build loop rebasing a unit branch
+# per .claude/skills/build-app/SKILL.md) cancels its own superseded run instead
+# of queuing behind it. Never cancel a push to main — that run is the one
+# that decides whether main itself is green.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      # A bare `tsc --noEmit` is a SILENT NO-OP on this repo: root tsconfig.json
+      # is `"files": []` + project references, which a plain invocation does
+      # not walk. Verified — `--listFiles` loads 0 files from src/. The
+      # --project flag is load-bearing. Do not "simplify" this line.
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
+
+      # Gate B of the framework/app split (docs/OWNERS.md, docs/DECISIONS.md): every tracked file
+      # must have exactly one declared owner in platform/framework.json, and in a role: "consumer"
+      # repo the vendored platform/** (plus a handful of materialized paths outside it, e.g.
+      # vite.config.ts) must still match platform/framework.lock's hashes. This repo is role:
+      # "source", so only the classification half fires here — the hash-check is what actually
+      # protects a portal, and this step is what proves the mechanism itself stays wired up.
+      - name: Framework boundary intact
+        run: npm run framework:verify -- --check
+
+      # The `materialized` files (vite.config.ts, the tsconfigs, src/main.tsx, …) are deployed
+      # copies of canonical originals in platform/materialized/, which is what a framework update
+      # actually delivers — they cannot live under platform/ at their real paths, so subtree
+      # cannot carry them directly. Drift here means someone edited the deployed copy instead of
+      # the canonical one, or an update landed without `framework:apply`. Either way the next
+      # `framework:lock` would pin whichever version happens to be on disk.
+      - name: Materialized files deployed
+        run: npm run framework:apply -- --check
+
+      # Generated file, same model as src/integrations/supabase/types.ts —
+      # regenerate and commit, never hand-edit. This step blocks; docs:check
+      # below does not (it's a drift *detector*, not a gate).
+      - name: Architecture inventory up to date
+        run: npm run docs:arch -- --check
+
+      # Same generated-file model as the inventory above. No-ops when
+      # docs/plan/units/ doesn't exist, so the un-planned skeleton stays
+      # green. Blocks when a plan exists and is stale or schema-invalid: a
+      # malformed unit file would silently break the autonomous build loop.
+      # Also enforces foundation-first on a unit/<NNN>-<slug> branch: a leaf
+      # unit's PR is blocked here if its depends_on aren't merged yet — the
+      # same rule .claude/skills/build-app/SKILL.md's loop applies itself,
+      # now checked for a human bypassing the loop too.
+      - name: Plan roadmap up to date
+        run: npm run docs:plan -- --check
+
+      # Warning-only doc-drift check — never fails the build. Its job is to
+      # surface issues in the log, not block a merge.
+      - name: Doc drift check (non-blocking)
+        run: npm run docs:check
+        continue-on-error: true
+
+      # vite build uses the SWC plugin and does NOT typecheck — this step only
+      # catches import/alias resolution and Tailwind-plugin failures.
+      - name: Build
+        run: npm run build
+
+      # docs/architecture/auth.md § Dev auth bypass: VITE_DEV_AUTH injects a synthetic
+      # currentUser so a protected page can be opened with no real account. It's gated on
+      # import.meta.env.DEV, which Vite replaces with `false` in a production build — this
+      # step is what actually proves that elimination happened, rather than trusting it.
+      - name: Dev auth bypass absent from production bundle
+        run: |
+          if grep -rq "dev-auth-bypass@localhost" dist/; then
+            echo "::error::Dev auth bypass leaked into the production build"; exit 1
+          fi
+
+      # .claude/** and CLAUDE.md are policy-as-code with no test suite — a change
+      # here affects every developer's Claude sessions on their next pull, not
+      # just this PR. Non-blocking: just make it visible. See docs/OWNERS.md.
+      - name: Flag shared agent policy changes (non-blocking)
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        run: |
+          git fetch origin "${{ github.base_ref }}" --depth=50
+          if git diff --name-only "origin/${{ github.base_ref }}" HEAD | grep -qE '^(\.claude/|CLAUDE\.md)'; then
+            echo "::notice::This PR changes shared agent policy (.claude/** or CLAUDE.md) — it affects every developer's Claude sessions. Owner review requested per docs/OWNERS.md. Add an entry to docs/DECISIONS.md."
+          fi

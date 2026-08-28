@@ -1,0 +1,21 @@
+dist
+dist-ssr
+node_modules
+package-lock.json
+supabase/.temp
+
+# Generated — regenerate via `npm run gen-supabase-types`, never hand-format
+src/integrations/supabase/types.ts
+
+# Vendored upstream skill content — hash-tracked via skills-lock.json, never reformatted
+.agents/skills
+.claude/skills/shadcn
+.claude/skills/migrate-radix-to-base
+
+# Historical, frozen migration reports — not part of the active codebase
+.migration
+
+# Hand-written prose (root docs, rules, skills) — Prettier's markdown formatter rewrites
+# emphasis style (*x* -> _x_) and realigns tables, which is unrelated churn across files
+# nobody asked to touch. Only code/config/CSS get the shared formatter.
+*.md

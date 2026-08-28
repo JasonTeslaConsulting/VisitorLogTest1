@@ -1,0 +1,22 @@
+# Derived from docs/OWNERS.md — that file is the source of truth, this is a
+# short, hand-synced excerpt covering only the high-friction areas.
+#
+# Replace @jason with the actual GitHub username before this has any effect.
+#
+# GitHub matches these as gitignore-style globs (Gitea's own CODEOWNERS reads
+# the same paths as regular expressions instead — see .gitea/CODEOWNERS).
+#
+# On GitHub, turn on "Require review from Code Owners" in branch protection
+# to make this an actual gate, not just an auto-assign. (`platform/` has a
+# REAL gate regardless: `npm run framework:verify -- --check` in CI, hash-
+# checked against platform/framework.lock whenever this repo's role is
+# "consumer" — see docs/OWNERS.md and docs/DECISIONS.md.)
+#
+# One entry, not several: `platform/` already covers the shared UI library,
+# AuthContext, and the auth service — all of them moved under it in the
+# framework/app split.
+
+platform/          @jason
+src/theme.css      @jason
+.claude/           @jason
+CLAUDE.md          @jason

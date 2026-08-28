@@ -1,0 +1,187 @@
+/* ============================================================================
+   DESIGN-SYSTEM MACHINERY — framework-owned. Do not put token values here.
+
+   This file owns *structure*: the Tailwind import, the dark variant, the
+   `@theme inline` block that exposes each token as a utility class, and the
+   base layer. The values it points at are the app's, in src/theme.css.
+
+   The split exists because brand values are per portal and structure is not.
+   Keeping them in one file made src/index.css a seam every framework update
+   would have had to merge into. See platform/framework.json and
+   docs/DECISIONS.md.
+
+   `@theme inline` must still mirror the token list in src/theme.css 1:1 — a
+   token defined there with no mapping here is unreachable from component code,
+   which `npm run docs:check` flags. That rule is unchanged; only its two halves
+   now live in different files.
+   ============================================================================ */
+
+@import "tailwindcss";
+@import "tw-animate-css";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --color-border: hsl(var(--border));
+  --color-border-dark: hsl(var(--border-dark));
+  --color-elevation-2: hsl(var(--elevation-2));
+  --color-input: var(--input);
+  --color-input-background: hsl(var(--input-background));
+  --color-ring: hsl(var(--ring));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary-hover: hsl(var(--primary-hover));
+  --color-highlight: hsl(var(--highlight));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-secondary-hover: hsl(var(--secondary-hover));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-destructive-hover: hsl(var(--destructive-hover));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+  --color-success-text: hsl(var(--success-text));
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+  --color-warning-text: hsl(var(--warning-text));
+  --color-info: hsl(var(--info));
+  --color-info-foreground: hsl(var(--info-foreground));
+  --color-disabled-text: hsl(var(--disabled-text));
+  --color-disabled: hsl(var(--button-disabled));
+  --color-control-disabled: hsl(var(--control-disabled));
+  --color-control-disabled-icon: hsl(var(--control-disabled-icon));
+  --color-control-disabled-knob: hsl(var(--control-disabled-knob));
+  --color-switch-track-off: hsl(var(--switch-track-off));
+  --color-sidebar: hsl(var(--sidebar-background));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+
+  --radius-lg: var(--radius-lg);
+  --radius-md: var(--radius-md);
+  --radius-sm: var(--radius-sm);
+
+  --shadow-2xs: none;
+  --shadow-xs: none;
+  --shadow-sm: none;
+  --shadow: none;
+  --shadow-md: var(--elevation-3);
+  --shadow-lg: var(--elevation-3);
+  --shadow-xl: var(--elevation-3);
+  --shadow-2xl: var(--elevation-3);
+
+  /* Type scale passthrough (DESIGN.md §3, tailwind.md §5). Without these, `text-title-lg` and
+     friends resolve to NOTHING — Tailwind's JIT only emits a utility for a theme key it can see,
+     so the classes silently inherit their parent's size. That is exactly what happened: the scale
+     was documented as implemented while every one of these was missing, so seven sample rows and
+     calendar.tsx's day labels all rendered at the inherited 14px. */
+  --text-display-lg: var(--text-display-lg);
+  --text-display-lg--line-height: var(--text-display-lg--line-height);
+  --text-headline-lg: var(--text-headline-lg);
+  --text-headline-lg--line-height: var(--text-headline-lg--line-height);
+  --text-headline-md: var(--text-headline-md);
+  --text-headline-md--line-height: var(--text-headline-md--line-height);
+  --text-title-lg: var(--text-title-lg);
+  --text-title-lg--line-height: var(--text-title-lg--line-height);
+  --text-subtitle: var(--text-subtitle);
+  --text-subtitle--line-height: var(--text-subtitle--line-height);
+  --text-body-lg: var(--text-body-lg);
+  --text-body-lg--line-height: var(--text-body-lg--line-height);
+  --text-body-md: var(--text-body-md);
+  --text-body-md--line-height: var(--text-body-md--line-height);
+  --text-button: var(--text-button);
+  --text-button--line-height: var(--text-button--line-height);
+  --text-label-sm: var(--text-label-sm);
+  --text-label-sm--line-height: var(--text-label-sm--line-height);
+
+  --font-sans: var(--font-sans);
+  --font-heading: var(--font-heading);
+  --font-mono: var(--font-mono);
+}
+
+/* Toasts are rendered by platform/src/components/ui/toast.tsx via sonner's `toast.custom`,
+   which sets data-styled=false so none of sonner's own card CSS applies. There is nothing to
+   override here any more — the previous commented-out [data-sonner-toaster] block re-pointed
+   sonner's richColors variables at our tokens and never worked (it referenced --success-light,
+   which does not exist). See tailwind.md §7. */
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /* Scrollbars, app-wide.
+
+     ::-webkit-scrollbar rather than the standard `scrollbar-width`/`scrollbar-color`,
+     because only the pseudo-elements can remove the stepper arrows. Windows Chromium
+     draws those buttons even at `scrollbar-width: thin` — an earlier version of this
+     block used the standard properties on the assumption that `thin` dropped them, and
+     it does not.
+
+     The two are mutually exclusive, not complementary: where both are present Chromium
+     gives the standard properties precedence and ignores the pseudo-elements entirely.
+     Measured — `::-webkit-scrollbar { width: 12px }` renders at 12px alone, but at 10px
+     the moment any `scrollbar-width` applies to the same element. So the standard
+     properties are confined to the @supports block below rather than sitting alongside.
+
+     Bare `::-webkit-scrollbar` matches every element, so nested scrollers — dialogs,
+     sheets, popovers, table bodies, the TimePicker's columns — are covered without each
+     opting in, and without the inheritance asymmetry the standard properties have
+     (`scrollbar-color` inherits, `scrollbar-width` does not).
+
+     Track is transparent so nothing is painted at rest except the thumb, and the thumb
+     fills the full gutter width rather than floating inside a wider track. Both colours
+     are tokens, so dark mode follows for free. A thumb `:hover` colour is available here
+     if wanted — deliberately not set. */
+  ::-webkit-scrollbar {
+    width: 8px;
+    /* `height` sizes HORIZONTAL scrollbars, `width` vertical ones. They have to move
+       together or a wide table's scrollbar ends up thicker than the page's. */
+    height: 8px;
+  }
+
+  /* The stepper arrows at each end of the gutter. */
+  ::-webkit-scrollbar-button {
+    display: none;
+  }
+
+  ::-webkit-scrollbar-track,
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--color-border-dark);
+    border-radius: var(--radius-sm);
+  }
+
+  /* Firefox, which has no ::-webkit-* pseudo-elements — and no stepper arrows to
+     remove either, so `thin` is the whole treatment there. Gated on @supports so
+     these never reach Chromium, where they would override everything above. */
+  @supports not selector(::-webkit-scrollbar) {
+    * {
+      scrollbar-width: thin;
+    }
+
+    html {
+      scrollbar-color: var(--color-border-dark) transparent;
+    }
+  }
+}

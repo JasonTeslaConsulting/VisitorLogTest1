@@ -1,0 +1,25 @@
+# Derived from docs/OWNERS.md — that file is the source of truth, this is a
+# short, hand-synced excerpt covering only the high-friction areas.
+#
+# Replace @jason with the actual Gitea username before this has any effect.
+#
+# Gitea matches these patterns as REGULAR EXPRESSIONS over the full path (not
+# gitignore-style globs like GitHub). Kept simple on purpose so that isn't a
+# problem — no wildcards below.
+#
+# Gitea's CODEOWNERS only AUTO-ASSIGNS a reviewer; it has no equivalent of
+# GitHub's "require review from Code Owners" branch-protection toggle. On
+# Gitea this is a nudge, not a gate — the real gate is the "1 approval"
+# branch-protection rule plus the PR template's scope checklist. (Except
+# `platform/` itself, which has a REAL gate: `npm run framework:verify -- --check`
+# in CI, hash-checked against platform/framework.lock whenever this repo's
+# role is "consumer" — see docs/OWNERS.md and docs/DECISIONS.md.)
+#
+# One entry, not several: `platform/` already covers the shared UI library,
+# AuthContext, and the auth service — all of them moved under it in the
+# framework/app split.
+
+platform/          @jason
+src/theme.css      @jason
+.claude/           @jason
+CLAUDE.md          @jason
