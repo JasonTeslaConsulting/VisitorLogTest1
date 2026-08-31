@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.17"
+    PostgrestVersion: "14.5"
   }
   _arch: {
     Tables: {
@@ -405,6 +405,282 @@ export type Database = {
     Functions: {
       can_see_menu: { Args: { target_menuid: string }; Returns: boolean }
       is_arch_admin: { Args: never; Returns: boolean }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+  _batch: {
+    Tables: {
+      batchprocessqueue: {
+        Row: {
+          batchprocessqueueid: string
+          createdby: string
+          createddate: string
+          isqueued: boolean
+          modifiedby: string
+          modifieddate: string
+          transactionpayload: Json
+          transactiontypeid: string
+        }
+        Insert: {
+          batchprocessqueueid?: string
+          createdby?: string
+          createddate?: string
+          isqueued?: boolean
+          modifiedby?: string
+          modifieddate?: string
+          transactionpayload: Json
+          transactiontypeid: string
+        }
+        Update: {
+          batchprocessqueueid?: string
+          createdby?: string
+          createddate?: string
+          isqueued?: boolean
+          modifiedby?: string
+          modifieddate?: string
+          transactionpayload?: Json
+          transactiontypeid?: string
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      is_batch_admin: { Args: never; Returns: boolean }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+  _calendar: {
+    Tables: {
+      calendarevent: {
+        Row: {
+          calendareventid: string
+          calendareventname: string
+          calendartypeid: string
+          createdby: string
+          createddate: string
+          eventenddatetime: string
+          eventstartdatetime: string
+          modifiedby: string
+          modifieddate: string
+          recurringeventid: string | null
+        }
+        Insert: {
+          calendareventid?: string
+          calendareventname: string
+          calendartypeid: string
+          createdby?: string
+          createddate?: string
+          eventenddatetime: string
+          eventstartdatetime: string
+          modifiedby?: string
+          modifieddate?: string
+          recurringeventid?: string | null
+        }
+        Update: {
+          calendareventid?: string
+          calendareventname?: string
+          calendartypeid?: string
+          createdby?: string
+          createddate?: string
+          eventenddatetime?: string
+          eventstartdatetime?: string
+          modifiedby?: string
+          modifieddate?: string
+          recurringeventid?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_calendarevent_calendartype"
+            columns: ["calendartypeid"]
+            isOneToOne: false
+            referencedRelation: "calendartype"
+            referencedColumns: ["calendartypeid"]
+          },
+          {
+            foreignKeyName: "fk_calendarevent_recurringevent"
+            columns: ["recurringeventid"]
+            isOneToOne: false
+            referencedRelation: "recurringevent"
+            referencedColumns: ["recurringeventid"]
+          },
+        ]
+      }
+      calendartype: {
+        Row: {
+          calendarcolorcode: string | null
+          calendartypeid: string
+          calendartypename: string
+          createdby: string
+          createddate: string
+          issystemcalendar: boolean
+          modifiedby: string
+          modifieddate: string
+        }
+        Insert: {
+          calendarcolorcode?: string | null
+          calendartypeid?: string
+          calendartypename: string
+          createdby?: string
+          createddate?: string
+          issystemcalendar?: boolean
+          modifiedby?: string
+          modifieddate?: string
+        }
+        Update: {
+          calendarcolorcode?: string | null
+          calendartypeid?: string
+          calendartypename?: string
+          createdby?: string
+          createddate?: string
+          issystemcalendar?: boolean
+          modifiedby?: string
+          modifieddate?: string
+        }
+        Relationships: []
+      }
+      nonstandardeventtype: {
+        Row: {
+          createdby: string
+          createddate: string
+          modifiedby: string
+          modifieddate: string
+          nonstandardeventtypecode: string
+          nonstandardeventtypedetails: Json | null
+          nonstandardeventtypeid: string
+          nonstandardeventtypename: string
+          organizationid: string
+        }
+        Insert: {
+          createdby?: string
+          createddate?: string
+          modifiedby?: string
+          modifieddate?: string
+          nonstandardeventtypecode: string
+          nonstandardeventtypedetails?: Json | null
+          nonstandardeventtypeid?: string
+          nonstandardeventtypename: string
+          organizationid: string
+        }
+        Update: {
+          createdby?: string
+          createddate?: string
+          modifiedby?: string
+          modifieddate?: string
+          nonstandardeventtypecode?: string
+          nonstandardeventtypedetails?: Json | null
+          nonstandardeventtypeid?: string
+          nonstandardeventtypename?: string
+          organizationid?: string
+        }
+        Relationships: []
+      }
+      organizationcalendartype: {
+        Row: {
+          calendartypeid: string
+          createdby: string
+          createddate: string
+          modifiedby: string
+          modifieddate: string
+          organizationcalendartypeid: string
+          organizationid: string
+        }
+        Insert: {
+          calendartypeid: string
+          createdby?: string
+          createddate?: string
+          modifiedby?: string
+          modifieddate?: string
+          organizationcalendartypeid?: string
+          organizationid: string
+        }
+        Update: {
+          calendartypeid?: string
+          createdby?: string
+          createddate?: string
+          modifiedby?: string
+          modifieddate?: string
+          organizationcalendartypeid?: string
+          organizationid?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_organizationcalendartype_calendartype"
+            columns: ["calendartypeid"]
+            isOneToOne: false
+            referencedRelation: "calendartype"
+            referencedColumns: ["calendartypeid"]
+          },
+        ]
+      }
+      recurringevent: {
+        Row: {
+          allowinlieu: boolean
+          calendartypeid: string
+          createdby: string
+          createddate: string
+          modifiedby: string
+          modifieddate: string
+          recurringeventcode: string
+          recurringeventdate: string
+          recurringeventdescription: string | null
+          recurringeventid: string
+          recurringfrequency: string
+        }
+        Insert: {
+          allowinlieu?: boolean
+          calendartypeid: string
+          createdby?: string
+          createddate?: string
+          modifiedby?: string
+          modifieddate?: string
+          recurringeventcode: string
+          recurringeventdate: string
+          recurringeventdescription?: string | null
+          recurringeventid?: string
+          recurringfrequency?: string
+        }
+        Update: {
+          allowinlieu?: boolean
+          calendartypeid?: string
+          createdby?: string
+          createddate?: string
+          modifiedby?: string
+          modifieddate?: string
+          recurringeventcode?: string
+          recurringeventdate?: string
+          recurringeventdescription?: string | null
+          recurringeventid?: string
+          recurringfrequency?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_recurringevent_calendartype"
+            columns: ["calendartypeid"]
+            isOneToOne: false
+            referencedRelation: "calendartype"
+            referencedColumns: ["calendartypeid"]
+          },
+        ]
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      is_calendar_admin: { Args: never; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
@@ -1367,8 +1643,8 @@ export type Database = {
         Row: {
           createdby: string
           createddate: string
-          modifiedby: string
-          modifieddate: string
+          modifiedby: string | null
+          modifieddate: string | null
           rolecode: string
           roledescription: string | null
           roleid: string
@@ -1378,8 +1654,8 @@ export type Database = {
         Insert: {
           createdby?: string
           createddate?: string
-          modifiedby?: string
-          modifieddate?: string
+          modifiedby?: string | null
+          modifieddate?: string | null
           rolecode: string
           roledescription?: string | null
           roleid?: string
@@ -1389,8 +1665,8 @@ export type Database = {
         Update: {
           createdby?: string
           createddate?: string
-          modifiedby?: string
-          modifieddate?: string
+          modifiedby?: string | null
+          modifieddate?: string | null
           rolecode?: string
           roledescription?: string | null
           roleid?: string
@@ -1467,6 +1743,379 @@ export type Database = {
       is_secure_inbox_admin: { Args: never; Returns: boolean }
       is_secure_org_admin: { Args: never; Returns: boolean }
       is_secure_user_admin: { Args: never; Returns: boolean }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+  _sysconfig: {
+    Tables: {
+      configurationgroup: {
+        Row: {
+          configurationgroupdescription: string | null
+          configurationgroupid: string
+          configurationgroupname: string
+          createdby: string
+          createddate: string
+          modifiedby: string
+          modifieddate: string
+          parentconfigurationgroupid: string | null
+          sortorder: number
+        }
+        Insert: {
+          configurationgroupdescription?: string | null
+          configurationgroupid?: string
+          configurationgroupname: string
+          createdby?: string
+          createddate?: string
+          modifiedby?: string
+          modifieddate?: string
+          parentconfigurationgroupid?: string | null
+          sortorder?: number
+        }
+        Update: {
+          configurationgroupdescription?: string | null
+          configurationgroupid?: string
+          configurationgroupname?: string
+          createdby?: string
+          createddate?: string
+          modifiedby?: string
+          modifieddate?: string
+          parentconfigurationgroupid?: string | null
+          sortorder?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_configurationgroup_parentconfigurationgroup"
+            columns: ["parentconfigurationgroupid"]
+            isOneToOne: false
+            referencedRelation: "configurationgroup"
+            referencedColumns: ["configurationgroupid"]
+          },
+        ]
+      }
+      configurationsetting: {
+        Row: {
+          attributedatatypeid: string
+          configurationgroupid: string
+          configurationsettingdescription: string
+          configurationsettingid: string
+          configurationsettingname: string
+          configurationsettingvalueboolean: boolean | null
+          configurationsettingvaluedatetime: string | null
+          configurationsettingvalueinteger: number | null
+          configurationsettingvaluenumeric: number | null
+          configurationsettingvaluetext: string | null
+          configurationsettingvaluetime: string | null
+          createdby: string
+          createddate: string
+          isdisabled: boolean
+          modifiedby: string
+          modifieddate: string
+        }
+        Insert: {
+          attributedatatypeid: string
+          configurationgroupid: string
+          configurationsettingdescription: string
+          configurationsettingid?: string
+          configurationsettingname: string
+          configurationsettingvalueboolean?: boolean | null
+          configurationsettingvaluedatetime?: string | null
+          configurationsettingvalueinteger?: number | null
+          configurationsettingvaluenumeric?: number | null
+          configurationsettingvaluetext?: string | null
+          configurationsettingvaluetime?: string | null
+          createdby?: string
+          createddate?: string
+          isdisabled?: boolean
+          modifiedby?: string
+          modifieddate?: string
+        }
+        Update: {
+          attributedatatypeid?: string
+          configurationgroupid?: string
+          configurationsettingdescription?: string
+          configurationsettingid?: string
+          configurationsettingname?: string
+          configurationsettingvalueboolean?: boolean | null
+          configurationsettingvaluedatetime?: string | null
+          configurationsettingvalueinteger?: number | null
+          configurationsettingvaluenumeric?: number | null
+          configurationsettingvaluetext?: string | null
+          configurationsettingvaluetime?: string | null
+          createdby?: string
+          createddate?: string
+          isdisabled?: boolean
+          modifiedby?: string
+          modifieddate?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_configurationsetting_configurationgroup"
+            columns: ["configurationgroupid"]
+            isOneToOne: false
+            referencedRelation: "configurationgroup"
+            referencedColumns: ["configurationgroupid"]
+          },
+        ]
+      }
+      systemsequence: {
+        Row: {
+          createdby: string
+          createddate: string
+          modifiedby: string
+          modifieddate: string
+          systemsequenceid: string
+          systemsequencename: string
+          systemsequencevalue: number
+        }
+        Insert: {
+          createdby?: string
+          createddate?: string
+          modifiedby?: string
+          modifieddate?: string
+          systemsequenceid?: string
+          systemsequencename: string
+          systemsequencevalue: number
+        }
+        Update: {
+          createdby?: string
+          createddate?: string
+          modifiedby?: string
+          modifieddate?: string
+          systemsequenceid?: string
+          systemsequencename?: string
+          systemsequencevalue?: number
+        }
+        Relationships: []
+      }
+      systemvalue: {
+        Row: {
+          createdby: string
+          createddate: string
+          modifiedby: string
+          modifieddate: string
+          systemvalueboolean: boolean | null
+          systemvaluecode: string
+          systemvaluedatetime: string | null
+          systemvalueid: string
+          systemvalueinteger: number | null
+          systemvaluenumeric: number | null
+          systemvaluetext: string | null
+          systemvaluetime: string | null
+        }
+        Insert: {
+          createdby?: string
+          createddate?: string
+          modifiedby?: string
+          modifieddate?: string
+          systemvalueboolean?: boolean | null
+          systemvaluecode: string
+          systemvaluedatetime?: string | null
+          systemvalueid?: string
+          systemvalueinteger?: number | null
+          systemvaluenumeric?: number | null
+          systemvaluetext?: string | null
+          systemvaluetime?: string | null
+        }
+        Update: {
+          createdby?: string
+          createddate?: string
+          modifiedby?: string
+          modifieddate?: string
+          systemvalueboolean?: boolean | null
+          systemvaluecode?: string
+          systemvaluedatetime?: string | null
+          systemvalueid?: string
+          systemvalueinteger?: number | null
+          systemvaluenumeric?: number | null
+          systemvaluetext?: string | null
+          systemvaluetime?: string | null
+        }
+        Relationships: []
+      }
+      systemvariable: {
+        Row: {
+          createdby: string
+          createddate: string
+          modifiedby: string
+          modifieddate: string
+          systemvariablecode: string
+          systemvariabledescription: string
+          systemvariableid: string
+          systemvariablesql: string | null
+        }
+        Insert: {
+          createdby?: string
+          createddate?: string
+          modifiedby?: string
+          modifieddate?: string
+          systemvariablecode: string
+          systemvariabledescription: string
+          systemvariableid?: string
+          systemvariablesql?: string | null
+        }
+        Update: {
+          createdby?: string
+          createddate?: string
+          modifiedby?: string
+          modifieddate?: string
+          systemvariablecode?: string
+          systemvariabledescription?: string
+          systemvariableid?: string
+          systemvariablesql?: string | null
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      is_sysconfig_admin: { Args: never; Returns: boolean }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+  _visitor: {
+    Tables: {
+      visitorequipment: {
+        Row: {
+          createdby: string
+          createddate: string
+          itemdescription: string
+          itemtypeid: string
+          modifiedby: string
+          modifieddate: string
+          quantity: number
+          serialnumber: string | null
+          visitorequipmentid: string
+          visitorregisterid: string
+        }
+        Insert: {
+          createdby?: string
+          createddate?: string
+          itemdescription: string
+          itemtypeid: string
+          modifiedby?: string
+          modifieddate?: string
+          quantity?: number
+          serialnumber?: string | null
+          visitorequipmentid?: string
+          visitorregisterid: string
+        }
+        Update: {
+          createdby?: string
+          createddate?: string
+          itemdescription?: string
+          itemtypeid?: string
+          modifiedby?: string
+          modifieddate?: string
+          quantity?: number
+          serialnumber?: string | null
+          visitorequipmentid?: string
+          visitorregisterid?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_visitorequipment_visitorregister"
+            columns: ["visitorregisterid"]
+            isOneToOne: false
+            referencedRelation: "visitorregister"
+            referencedColumns: ["visitorregisterid"]
+          },
+        ]
+      }
+      visitorregister: {
+        Row: {
+          consentvideocontent: string
+          createdby: string
+          createddate: string
+          emailaddress: string | null
+          entrydate: string
+          exitdate: string | null
+          exitloggedby: string | null
+          exitloggeddate: string | null
+          fullname: string
+          hostid: string
+          isconsentvideorecord: boolean
+          isprivacypolicyread: boolean
+          mobilenumber: string | null
+          mobilenumbercountrydialid: string | null
+          modifiedby: string
+          modifieddate: string
+          organization: string | null
+          otherdetails: Json | null
+          privacypolicycontent: string
+          visitorregisterid: string
+          visitpurposeid: string
+        }
+        Insert: {
+          consentvideocontent: string
+          createdby?: string
+          createddate?: string
+          emailaddress?: string | null
+          entrydate?: string
+          exitdate?: string | null
+          exitloggedby?: string | null
+          exitloggeddate?: string | null
+          fullname: string
+          hostid: string
+          isconsentvideorecord?: boolean
+          isprivacypolicyread?: boolean
+          mobilenumber?: string | null
+          mobilenumbercountrydialid?: string | null
+          modifiedby?: string
+          modifieddate?: string
+          organization?: string | null
+          otherdetails?: Json | null
+          privacypolicycontent: string
+          visitorregisterid?: string
+          visitpurposeid: string
+        }
+        Update: {
+          consentvideocontent?: string
+          createdby?: string
+          createddate?: string
+          emailaddress?: string | null
+          entrydate?: string
+          exitdate?: string | null
+          exitloggedby?: string | null
+          exitloggeddate?: string | null
+          fullname?: string
+          hostid?: string
+          isconsentvideorecord?: boolean
+          isprivacypolicyread?: boolean
+          mobilenumber?: string | null
+          mobilenumbercountrydialid?: string | null
+          modifiedby?: string
+          modifieddate?: string
+          organization?: string | null
+          otherdetails?: Json | null
+          privacypolicycontent?: string
+          visitorregisterid?: string
+          visitpurposeid?: string
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      can_access_visitorregister: {
+        Args: { target_visitorregisterid: string }
+        Returns: boolean
+      }
+      is_current_host: { Args: { target_hostid: string }; Returns: boolean }
+      is_visitor_admin: { Args: never; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
@@ -1622,10 +2271,22 @@ export const Constants = {
   _arch: {
     Enums: {},
   },
+  _batch: {
+    Enums: {},
+  },
+  _calendar: {
+    Enums: {},
+  },
   _common: {
     Enums: {},
   },
   _secure: {
+    Enums: {},
+  },
+  _sysconfig: {
+    Enums: {},
+  },
+  _visitor: {
     Enums: {},
   },
   public: {
