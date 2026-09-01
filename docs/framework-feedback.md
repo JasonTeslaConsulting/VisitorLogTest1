@@ -11,6 +11,9 @@ delete the items you've handled. Add to it; don't let it silently grow stale.
 Each item: where the problem is, what happened (with evidence), a suggested fix, and why it
 matters beyond this one app.
 
+**⚠ Item 9 is CI-blocking, not just a process gap** — it fails a required (non-`continue-on-error`)
+GitHub Actions step on every route-bearing unit's PR, not only this app's. Prioritize it.
+
 ---
 
 ## 1. `plan-app` never asks about the post-login landing route
@@ -210,6 +213,61 @@ already been written and partially run once, requiring a follow-up fix (a fourth
 [schema]? If so, confirm via a probe query (or ask the user to) that the schema is exposed and
 what's granted, before generating `db-setup.md`" — turning what was three rounds of user-reported
 SQL bugs into one upfront check.
+
+---
+
+## 9. ⚠ CRITICAL — `docs:plan`'s duplicate-route check fails on a unit's own route, blocking CI
+
+**Where:** `platform/scripts/gen-plan-docs.mjs`, the duplicate-route-vs-inventory check:
+
+```js
+const inventory = read(INVENTORY_MD) ?? "";
+for (const { file, fm } of units) {
+  if (!fm.route) continue;
+  if (inventory.includes(`\`${fm.route}\``)) {
+    errors.push(`${rel(file)}: route \`${fm.route}\` already exists in docs/architecture/inventory.md`);
+  }
+}
+```
+
+Consumed by `npm run docs:plan -- --check`, which is a **required, blocking** step in
+`.github/workflows/ci.yml` (`- name: Plan roadmap up to date`) — unlike `docs:check` a few steps
+later, which is explicitly `continue-on-error: true`. This one is not.
+
+**What happened, concretely:** Building U002 (`route: /register`), I created
+`src/routes/modules/register.routes.tsx` per the unit's own spec, then ran the required
+`npm run docs:arch` (regenerates `docs/architecture/inventory.md`'s Routes table from the routes
+that actually exist on disk — itself required, since `docs:arch -- --check` fails on a stale
+inventory). The regenerated inventory now correctly lists:
+
+```
+| `/register` | **app** | public | — | none | src/routes/modules/register.routes.tsx |
+```
+
+Immediately after, `npm run docs:plan -- --check` failed:
+`docs/plan/units/002-public-visitor-registration.md: route \`/register\` already exists in
+docs/architecture/inventory.md` — flagging **U002's own frontmatter `route:` field against the
+inventory row that U002's own just-built code produced.**
+
+**Why this isn't a one-off:** the check has no exemption for "this route's inventory entry came
+from the very unit declaring it." Every future unit with a non-null `route:` will hit this the
+moment its route file exists and `docs:arch` regenerates the inventory — which the COMMIT step of
+`.claude/skills/build-app/SKILL.md` requires for every unit, not an edge case. Since CI checks out
+the exact same committed files, **this will fail the real GitHub Actions run on this PR**, and on
+U003/U004/U005/U007/U008's PRs too, all for the same reason. I could not find a wording workaround
+this time (unlike the false positive fixed in `docs/features/home.md`'s status line) because the
+collision is against the unit's *own* legitimate route entry, not an unrelated string.
+
+**Suggested fix:** the check needs to recognize "this route belongs to this same unit" and skip it.
+Concretely: parse the inventory's Routes table (the check currently searches the *whole file's*
+text, not even scoped to that table) to get each row's Module column, and skip flagging when that
+Module path is already present in the same unit's own `touches.routes` list. Only flag when the
+route exists in the inventory attributed to a *different* module path than any this unit declares.
+
+**What I did instead:** proceeded with the unit — the code itself is correct, only this one CI
+check is broken — and recorded the expected `docs:plan -- --check` failure in U002's own
+`## Deviations` section so it's visible at review time, not silently hidden. The PR's CI will show
+red on this one step; that's expected until this fix lands, not a sign the unit itself is broken.
 
 ---
 
