@@ -1388,7 +1388,7 @@ export type Database = {
           applicationuserid: string
           applicationuserotherdetails: Json | null
           authenticationprincipalotherdetails: Json | null
-          authuserid: string
+          authuserid: string | null
           createdby: string
           createddate: string
           modifiedby: string
@@ -1399,7 +1399,7 @@ export type Database = {
           applicationuserid?: string
           applicationuserotherdetails?: Json | null
           authenticationprincipalotherdetails?: Json | null
-          authuserid: string
+          authuserid?: string | null
           createdby?: string
           createddate?: string
           modifiedby?: string
@@ -1410,7 +1410,7 @@ export type Database = {
           applicationuserid?: string
           applicationuserotherdetails?: Json | null
           authenticationprincipalotherdetails?: Json | null
-          authuserid?: string
+          authuserid?: string | null
           createdby?: string
           createddate?: string
           modifiedby?: string
@@ -2035,7 +2035,7 @@ export type Database = {
       }
       visitorregister: {
         Row: {
-          consentvideocontent: string
+          consentvideocontent: string | null
           createdby: string
           createddate: string
           emailaddress: string | null
@@ -2053,12 +2053,12 @@ export type Database = {
           modifieddate: string
           organization: string | null
           otherdetails: Json | null
-          privacypolicycontent: string
+          privacypolicycontent: string | null
           visitorregisterid: string
           visitpurposeid: string
         }
         Insert: {
-          consentvideocontent: string
+          consentvideocontent?: string | null
           createdby?: string
           createddate?: string
           emailaddress?: string | null
@@ -2076,12 +2076,12 @@ export type Database = {
           modifieddate?: string
           organization?: string | null
           otherdetails?: Json | null
-          privacypolicycontent: string
+          privacypolicycontent?: string | null
           visitorregisterid?: string
           visitpurposeid: string
         }
         Update: {
-          consentvideocontent?: string
+          consentvideocontent?: string | null
           createdby?: string
           createddate?: string
           emailaddress?: string | null
@@ -2099,7 +2099,7 @@ export type Database = {
           modifieddate?: string
           organization?: string | null
           otherdetails?: Json | null
-          privacypolicycontent?: string
+          privacypolicycontent?: string | null
           visitorregisterid?: string
           visitpurposeid?: string
         }
