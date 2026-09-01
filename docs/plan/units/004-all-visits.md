@@ -137,4 +137,20 @@ boundary; the route guard only controls who can reach the page.
 
 ## Deviations
 
-None.
+- **`useVisitHosts()` is called unconditionally in `VisitTables`, not only when `scope === "all"`.**
+  The spec described gating the call itself on scope, but React's Rules of Hooks forbid calling a
+  hook inside a runtime conditional in the same component (`eslint-plugin-react-hooks` would fail
+  the build) — the only literal-spec-compliant alternative was forking into two near-duplicate
+  components, which conflicts with CLAUDE.md's "touch only what you must." The call is
+  unconditional; only its *result* (`hostNameById`, `hostOptions`) is used, and only when
+  `scope === "all"`. It shares the `["visitHosts"]` query cache with `RegisterForm`, so on the
+  Staff page (`scope: "mine"`, the default) this is a cache hit, not a new network request —
+  confirmed no visible or behavioral change on `/visits` (see below).
+- Everything else shipped exactly as specified: `VisitTables`/`VisitColumns` extended rather than
+  forked, independent per-tab `FilterSheet` (not a shared filter), Host column positioned after
+  Organization/before Purpose, no filter-aware empty-state copy. VERIFY passed clean on the first
+  attempt (typecheck, lint, format, build); no retry was needed.
+- **Regression-checked live in the browser**, not just read as a diff: `/visits` (Staff,
+  `scope="mine"`) shows no Host column and no Filters button, identical to before this unit;
+  `/visits/manager` (Office Manager) shows the Host column and a working Filters sheet with the
+  host `Combobox` inside it (`VITE_DEV_AUTH` bypass, both roles).
