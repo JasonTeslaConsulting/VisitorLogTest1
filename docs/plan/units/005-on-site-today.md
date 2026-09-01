@@ -2,7 +2,7 @@
 id: U005
 slug: on-site-today
 title: On site today
-status: draft
+status: spec-ready
 kind: dashboard
 tier: leaf
 area: visitor
@@ -10,8 +10,8 @@ route: /visits/today
 access: protected
 required_role: ROLES.OFFICE_MANAGER
 layout: default
-template: null
-template_props: null
+template: split-card
+template_props: { ratio: equal }
 domain: visitor
 data_mode: live
 entities: [visitorregister]
@@ -19,14 +19,15 @@ depends_on: [U003]
 gate: required
 owner: null
 branch: null
-estimate_files: 3
+estimate_files: 2
 blocked_reason: null
+spec_source: 2026-09-01
 touches:
   routes: [src/routes/modules/visits.routes.tsx]
   types: []
   constants: []
   services: []
-  hooks: [src/hooks/visitor/useOnSiteToday.ts]
+  hooks: []
   pages: [src/pages/VisitsToday.tsx]
   components: [src/components/Visits/OnSiteSummary.tsx]
   shared_ui: []
@@ -35,25 +36,55 @@ touches:
 
 ## Purpose
 
-A reception-facing snapshot for the Office Manager: who is currently on site (entrydate today,
-exitdate null), a headcount, and anyone still checked in past a configurable "overdue" point.
-Appends one more route to `visits.routes.tsx` (created by U003).
+A reception-facing snapshot for the Office Manager: who is currently on site right now
+(`exitdate is null`, regardless of host — RLS's `is_visitor_admin()` already returns everyone for
+this role), a headcount, and an overdue count. Matches
+`platform/src/samples/samples/DashboardPage.tsx`'s exact shape (`SplitCardTemplate`, `ratio:
+"equal"`, stats in the main area separated by `Separator`, a compact list in the aside) —
+main area holds headcount + overdue, aside holds the on-site list.
 
-Adds `src/hooks/visitor/useOnSiteToday.ts` because this is an aggregation query distinct from
-`listVisits`'s paged list — count and a compact "currently on site" list, not a full table with
-search/sort/pagination. No new service function is assumed yet; whether this needs its own
-`src/services/visitor.ts` export (e.g. `getOnSiteToday()`) or can be derived client-side from
-`listVisits` is decided at spec time.
+No new service or hook. `useVisits({ status: "active", page: 1, perPage: 200, sort: { field:
+"entrydate", direction: "asc" } })` (U001, already exists — the same hook `VisitTables` uses)
+returns every currently-active visit; headcount is `rows.length`, the on-site list is `rows`
+itself sorted oldest-first, and "overdue" is derived client-side, not a separate query. 200 is a
+generous practical ceiling for "everyone on site in one office at once," not a real pagination
+limit — flagged as an assumption, not a hard product decision.
+
+**Overdue definition** (there is no "closing time" anywhere in this schema, so this needed a
+concrete rule rather than the vague "past closing" from the original app plan): a row is overdue
+when its `entryDate`'s calendar date is before today's **and** `exitDate` is still null — i.e.
+someone who was never checked out from a previous day. Purely derived, no new config.
+
+`src/components/Visits/OnSiteSummary.tsx` exports two small components, each independently calling
+`useVisits(...)` with the identical params object — `OnSiteStats` (the two stat blocks) and
+`OnSiteList` (the aside list). Two calls, not one, because they render into `SplitCardTemplate`'s
+two non-adjacent slots (`children` and `aside`) from the page; TanStack Query dedupes identical
+query keys into a single network request regardless of how many components call it.
 
 ## Data source
 
-TBD at spec time — either a new `getOnSiteToday()` export on U001's `src/services/visitor.ts`, or
-a client-side derivation from `listVisits`. staleTime should be short (this is a "right now" view).
+`useVisits` from `src/hooks/visitor/useVisits.ts` (U001) — no changes to it. `staleTime` is already
+`STALE_TIMES.FREQUENT` for `status: "active"`, which is what this page wants (a "right now" view).
 
 ## Fields
 
-| Field | Type | Source column | Display | Editable | Notes |
-| --- | --- | --- | --- | --- | --- |
+**Stats (main area, `OnSiteStats`):**
+
+| Stat | Derivation | Notes |
+| --- | --- | --- |
+| Currently on site | `rows.length` | large number, "People currently on site" caption — matches `DashboardPage`'s stat-block style exactly |
+| Overdue | count of rows where `entryDate`'s date < today | same style, below a `Separator` |
+
+**On-site list (aside, `OnSiteList`)**, one row per visit, oldest entry first:
+
+| Field | Source column | Display | Notes |
+| --- | --- | --- | --- |
+| Full name | `visitorregister.fullname` | plain text | — |
+| Duration | `visitorregister.entrydate` | `DateTimeUtils.calcDurationText(entryDate)` | e.g. "3 hours, 20 minutes" |
+| Overdue flag | derived (see above) | `Badge variant="warning"` reading "Overdue", inline next to the name | omitted entirely for a non-overdue row, not shown as "On time" |
+
+No search, sort, filter, or pagination controls on this list — it's a glance view, not a managed
+table (that's `/visits/manager`'s job).
 
 ## Validation
 
@@ -61,21 +92,27 @@ n/a — read-only dashboard.
 
 ## Layout
 
-Template (`card-grid` or `stacked-card`) chosen at spec time — a headcount/summary card plus a
-compact list, per the interview's "Today dashboard" answer.
+`split-card`, `ratio: "equal"`, title "On Site Today". Main area (`children`): "Currently on site"
+stat block, a `Separator`, "Overdue" stat block — identical structure to
+`DashboardPage.tsx`'s "Awaiting approval" main area. Aside: a heading ("On site now") followed by
+the compact list. No subtitle.
 
 ## Actions
 
-| Action | Trigger | Confirmation | Effect | On success | On failure |
-| --- | --- | --- | --- | --- | --- |
+None — read-only, no row actions, no page-level actions.
 
 ## States
 
-- **Empty:**
-- **Loading:**
-- **Error:**
-- **Permission-limited:**
-- **Post-mutation:**
+- **Empty:** headcount and overdue both show `0`; the aside list shows `EmptyState` with title "No
+  one is currently on site", no CTA.
+- **Loading:** `Skeleton` (`platform/src/components/ui/skeleton.tsx`) in place of each stat number
+  and in place of the list rows — no full-page spinner.
+- **Error:** if `useVisits` errors, both the stats area and the list show "Unable to load" in place
+  of their content (not a silent `0`, which would misrepresent an unknown count as an empty one),
+  plus one `toast.error`.
+- **Permission-limited:** n/a on this page itself — a non-`Office Manager` user never reaches
+  `/visits/today` (`ProtectedRoute` bounces them before render).
+- **Post-mutation:** n/a — no mutations on this page.
 
 ## Permissions
 
@@ -85,15 +122,30 @@ compact list, per the interview's "Today dashboard" answer.
 
 ### Creating
 
+- `src/pages/VisitsToday.tsx`
+- `src/components/Visits/OnSiteSummary.tsx`
+
 ### Modifying shared files
+
+- `src/routes/modules/visits.routes.tsx` — append the `/visits/today` route
 
 ### Reusing
 
+- `useVisits` from U001 — unchanged
+- `platform/src/templates/SplitCardTemplate`, `Separator`, `Skeleton`, `EmptyState`, `Badge`
+- `DateTimeUtils.calcDurationText` (`platform/src/lib/dateTimeUtils.ts`)
+
 ### Not doing
+
+- No new service or hook file
+- No "office closing time" config — overdue is purely derived (see `## Purpose`)
+- No search/sort/filter/pagination on the on-site list
+- No real pagination on the underlying query — `perPage: 200` is a practical ceiling, not a
+  designed limit
 
 ## Open questions
 
-- Must be empty before this unit leaves `spec-ready`.
+(none)
 
 ## Deviations
 
