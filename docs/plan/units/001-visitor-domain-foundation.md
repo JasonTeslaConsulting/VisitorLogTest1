@@ -267,3 +267,9 @@ consuming page's own route guard.
   planned, no barrel edits, no embedding of host/purpose names. VERIFY passed clean on the first
   attempt (typecheck, lint, format, `docs:arch`/`docs:plan` after regeneration, build); no retry
   was needed.
+
+## Delivery
+
+Pushed to `unit/001-visitor-domain-foundation`. Neither `gh` nor `tea` is available in this
+environment, so the PR needs to be opened by hand:
+https://github.com/JasonTeslaConsulting/VisitorLogTest1/compare/main...unit/001-visitor-domain-foundation
