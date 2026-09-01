@@ -1,5 +1,6 @@
 import { supabase } from "@framework/integrations/supabase/client";
 import type {
+  CountryDialCodeOption,
   CreateVisitPayload,
   EquipmentTypeOption,
   ListVisitsParams,
@@ -39,6 +40,13 @@ type RawVisitHostOption = { organizationuserid: string; fullname: string };
 type RawReferenceDataOption = {
   referencedataid: string;
   referencedataname: string;
+};
+
+type RawCountryDialCodeOption = {
+  countrydialid: string;
+  countrydialcode: string;
+  countryname: string;
+  isdefault: boolean;
 };
 
 // NOTE: `get_visitor_policy_text`'s SQL isn't defined in docs/plan/db-setup.md (only the three
@@ -87,6 +95,17 @@ function mapReferenceDataOption(
   return {
     referenceDataId: raw.referencedataid,
     referenceDataName: raw.referencedataname,
+  };
+}
+
+function mapCountryDialCodeOption(
+  raw: RawCountryDialCodeOption,
+): CountryDialCodeOption {
+  return {
+    countryDialId: raw.countrydialid,
+    countryDialCode: raw.countrydialcode,
+    countryName: raw.countryname,
+    isDefault: raw.isdefault,
   };
 }
 
@@ -257,4 +276,10 @@ export async function getPolicyText(): Promise<{
     "";
 
   return { privacyPolicyText, videoConsentText };
+}
+
+export async function listCountryDialCodes(): Promise<CountryDialCodeOption[]> {
+  const { data, error } = await rpc("list_country_dial_codes");
+  if (error) throw new Error(error.message);
+  return (data as RawCountryDialCodeOption[]).map(mapCountryDialCodeOption);
 }

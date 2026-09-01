@@ -1,5 +1,6 @@
 import {
   getPolicyText,
+  listCountryDialCodes,
   listEquipmentItemTypes,
   listVisitHosts,
   listVisitPurposes,
@@ -35,6 +36,14 @@ export function usePolicyText() {
   return useQuery({
     queryKey: ["policyText"],
     queryFn: () => getPolicyText(),
+    staleTime: STALE_TIMES.STATIC,
+  });
+}
+
+export function useCountryDialCodes() {
+  return useQuery({
+    queryKey: ["countryDialCodes"],
+    queryFn: () => listCountryDialCodes(),
     staleTime: STALE_TIMES.STATIC,
   });
 }

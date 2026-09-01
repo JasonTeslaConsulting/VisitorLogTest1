@@ -17,6 +17,7 @@ as reference. Framework files are read-only in a portal and imported via
 | Path | Owner | Access | Required role | Layout | Module |
 | --- | --- | --- | --- | --- | --- |
 | `/home` | **app** | authenticated | — | default | src/routes/modules/home.routes.tsx |
+| `/register` | **app** | public | — | none | src/routes/modules/register.routes.tsx |
 | `/` | framework | public | — | none | platform/src/routes/modules/auth.routes.tsx |
 | `/sample` | framework | public | — | default | platform/src/routes/modules/samples.routes.tsx |
 | `/sample/overview` | framework | public | — | default | platform/src/routes/modules/samples.routes.tsx |
@@ -43,7 +44,7 @@ as reference. Framework files are read-only in a portal and imported via
 
 **This app**
 
-- `src/services/visitor.ts` — `listVisits`, `logVisitExit`, `createVisit`, `listVisitHosts`, `listVisitPurposes`, `listEquipmentItemTypes`, `getPolicyText`
+- `src/services/visitor.ts` — `listVisits`, `logVisitExit`, `createVisit`, `listVisitHosts`, `listVisitPurposes`, `listEquipmentItemTypes`, `getPolicyText`, `listCountryDialCodes`
 
 **Framework (reference — read-only, `@framework/*`)**
 
@@ -57,7 +58,7 @@ as reference. Framework files are read-only in a portal and imported via
 
 **This app**
 
-- `src/hooks/visitor/useVisitLookups.ts` — `useVisitHosts`, `useVisitPurposes`, `useEquipmentItemTypes`, `usePolicyText`
+- `src/hooks/visitor/useVisitLookups.ts` — `useVisitHosts`, `useVisitPurposes`, `useEquipmentItemTypes`, `usePolicyText`, `useCountryDialCodes`
 - `src/hooks/visitor/useVisitMutations.ts` — `useCreateVisit`, `useLogVisitExit`
 - `src/hooks/visitor/useVisits.ts` — `useVisits`
 
@@ -156,6 +157,7 @@ as reference. Framework files are read-only in a portal and imported via
 **This app**
 
 - `src/pages/Home.tsx`
+- `src/pages/Register.tsx`
 
 **Framework (reference — read-only, `@framework/*`)**
 
@@ -254,7 +256,7 @@ shorthand — `max-w-(--container-max)`, not `max-w-[1280px]`.
 
 **This app**
 
-- `src/types/visitor.ts` — `VisitStatus`, `VisitEquipmentItem`, `Visit`, `VisitHostOption`, `VisitPurposeOption`, `EquipmentTypeOption`, `CreateVisitEquipmentInput`, `CreateVisitPayload`, `ListVisitsParams`
+- `src/types/visitor.ts` — `VisitStatus`, `VisitEquipmentItem`, `Visit`, `VisitHostOption`, `VisitPurposeOption`, `EquipmentTypeOption`, `CreateVisitEquipmentInput`, `CreateVisitPayload`, `ListVisitsParams`, `CountryDialCodeOption`
 
 **Framework (reference — read-only, `@framework/*`)**
 

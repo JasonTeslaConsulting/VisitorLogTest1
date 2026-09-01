@@ -210,4 +210,26 @@ Public — no auth, no role. RLS on `_visitor.visitorregister`/`visitorequipment
 
 ## Deviations
 
-None.
+- **zod v4 API drift.** The spec's `## Validation` schema used
+  `z.literal(true, { errorMap: () => ({ message: "..." }) })`. This repo's installed `zod` (v4.4.3)
+  renamed that param to `message` and changed the overload signature, so the verbatim spec code
+  fails `tsc`. Implemented as `z.literal(true, { message: "..." })` instead — same validation, same
+  error text, just the current API shape.
+- **CI-blocking framework bug found, not fixed here (not editable in this portal).**
+  `platform/scripts/gen-plan-docs.mjs`'s duplicate-route check
+  (`if (inventory.includes(\`${fm.route}\`)) errors.push(...)`) searches the *entire* text of
+  `docs/architecture/inventory.md` for a unit's own route, with no exemption for the route this
+  same unit's own `## Files` just created. Once this unit's `register.routes.tsx` exists and
+  `npm run docs:arch` regenerates the inventory (required — `docs:arch -- --check` fails
+  otherwise), the inventory's own freshly-added `/register` row makes `docs:plan -- --check` report
+  `route \`/register\` already exists` against **this unit's own frontmatter**. `docs:plan --
+  check` is a required, blocking step in `.github/workflows/ci.yml` (not `continue-on-error` like
+  `docs:check`), so **this will fail CI on this PR**, and will fail again on every future
+  route-bearing unit's PR for the same reason — it is not specific to `/register`. Filed in
+  `docs/framework-feedback.md` with the exact fix (skip a match when the inventory row's Module
+  column equals a path in that unit's own `touches.routes`). All other VERIFY steps (typecheck,
+  lint, format, `docs:arch -- --check`, build, scope-diff) pass clean.
+- Everything else shipped exactly as specified: all four files created, the three U001 files
+  extended exactly as planned (`listCountryDialCodes`, `CountryDialCodeOption`,
+  `useCountryDialCodes`), no barrel edits, no side sheet/modal, no Cancel button. No VERIFY retry
+  was needed beyond the one `prettier --write` pass on the three new files.
