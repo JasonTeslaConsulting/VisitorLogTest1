@@ -9,7 +9,7 @@
 
 ## Progress
 
-4 / 8 units merged to origin/main.
+5 / 8 units merged to origin/main.
 
 ## Build order
 
@@ -19,14 +19,13 @@
 | 2 | U002 | Public visitor registration | form | `/register` | merged | ✅ | U001 | — |
 | 3 | U003 | My visits | datatable | `/visits` | merged | ✅ | U001 | — |
 | 4 | U004 | All visits | datatable | `/visits/manager` | merged | ✅ | U003 | — |
-| 5 | U005 | On site today | dashboard | `/visits/today` | spec-ready | — | U003 | — |
+| 5 | U005 | On site today | dashboard | `/visits/today` | merged | ✅ | U003 | — |
 | 6 | U006 | Users domain foundation | infra | — | draft | — | — | — |
 | 7 | U007 | User management | datatable | `/admin/users` | waiting-on-deps | — | U006 | — |
 | 8 | U008 | Roles & permissions | form | `/admin/roles` | waiting-on-deps | — | U007 | — |
 
 ## Ready to build now
 
-- U005 — On site today (`docs/plan/units/005-on-site-today.md`)
 - U006 — Users domain foundation (`docs/plan/units/006-users-domain-foundation.md`)
 
 ## Blocked
