@@ -21,7 +21,7 @@
 | 4 | U004 | All visits | datatable | `/visits/manager` | merged | ✅ | U003 | — |
 | 5 | U005 | On site today | dashboard | `/visits/today` | merged | ✅ | U003 | — |
 | 6 | U006 | Users domain foundation | infra | — | merged | ✅ | — | — |
-| 7 | U007 | User management | datatable | `/admin/users` | draft | — | U006 | — |
+| 7 | U007 | User management | datatable | `/admin/users` | spec-ready | — | U006 | — |
 | 8 | U008 | Roles & permissions | form | `/admin/roles` | waiting-on-deps | — | U007 | — |
 
 ## Ready to build now
@@ -38,4 +38,5 @@
 - docs/plan/units/003-my-visits.md: route `/visits` already exists in docs/architecture/inventory.md
 - docs/plan/units/004-all-visits.md: route `/visits/manager` already exists in docs/architecture/inventory.md
 - docs/plan/units/005-on-site-today.md: route `/visits/today` already exists in docs/architecture/inventory.md
+- docs/plan/units/007-user-management.md: route `/admin/users` already exists in docs/architecture/inventory.md
 
