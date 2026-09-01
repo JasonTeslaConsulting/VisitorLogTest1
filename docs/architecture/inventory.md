@@ -43,7 +43,7 @@ as reference. Framework files are read-only in a portal and imported via
 
 **This app**
 
-_(none yet)_
+- `src/services/visitor.ts` — `listVisits`, `logVisitExit`, `createVisit`, `listVisitHosts`, `listVisitPurposes`, `listEquipmentItemTypes`, `getPolicyText`
 
 **Framework (reference — read-only, `@framework/*`)**
 
@@ -57,7 +57,9 @@ _(none yet)_
 
 **This app**
 
-_(none yet)_
+- `src/hooks/visitor/useVisitLookups.ts` — `useVisitHosts`, `useVisitPurposes`, `useEquipmentItemTypes`, `usePolicyText`
+- `src/hooks/visitor/useVisitMutations.ts` — `useCreateVisit`, `useLogVisitExit`
+- `src/hooks/visitor/useVisits.ts` — `useVisits`
 
 **Framework (reference — read-only, `@framework/*`)**
 
@@ -252,7 +254,7 @@ shorthand — `max-w-(--container-max)`, not `max-w-[1280px]`.
 
 **This app**
 
-_(none yet)_
+- `src/types/visitor.ts` — `VisitStatus`, `VisitEquipmentItem`, `Visit`, `VisitHostOption`, `VisitPurposeOption`, `EquipmentTypeOption`, `CreateVisitEquipmentInput`, `CreateVisitPayload`, `ListVisitsParams`
 
 **Framework (reference — read-only, `@framework/*`)**
 
