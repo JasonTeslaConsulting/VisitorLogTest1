@@ -161,4 +161,25 @@ what RLS allows a Staff-role caller to see.
 
 ## Deviations
 
-None.
+- **`AppRoute.access` has no `"protected"` value** — the type is `"public" | "authenticated"`;
+  `requiredRole` alone implies `"authenticated"` and adds the role guard. `visits.routes.tsx` sets
+  only `requiredRole: ROLES.STAFF`, which is the correct way to express this unit's
+  `access: protected` frontmatter (a unit-template term, not a literal `AppRoute` field value).
+- **`getVisitColumns()` does not take a `showHost` parameter yet**, despite the spec naming one for
+  U004's future reuse. The subagent omitted it as an unused parameter this unit doesn't need;
+  U004 will add it when it extends this file for the host column — a normal "modifying shared
+  files" change for that unit, not a gap in this one.
+- **Log exit uses its own `ConfirmDialog`** (in `VisitTables.tsx`) rather than `RowActionsCell`'s
+  built-in destructive-confirm path (marking the `RowAction` `destructive: true`), since the spec's
+  exact wording ("Log [visitor's full name] out? This marks their visit as ended and moves it to
+  Past Visits.") is more specific than the generic message `RowActionsCell` would generate.
+- **Caught and fixed during review, before commit:** the "Log exit" `RowAction` had no `icon`, so
+  `RowActionsCell`'s single-action path (`action.icon ?? PiWarning`) would have rendered a caution
+  triangle on a routine action. Added `icon: PiSignOut`.
+- Everything else shipped exactly as specified: tabs (not stacked tables), independent
+  `useTableState`/`useVisits` per tab, `expandMode="single"`, purpose/equipment-type name
+  resolution via the existing U001 lookup hooks, per-tab `EmptyState` with no CTA, Active-tab-only
+  row action, no auto-tab-switch. VERIFY passed clean after one `prettier --write` pass (the
+  subagent's output, then again after the icon fix); no other retry was needed. Confirmed live in
+  the browser via `VITE_DEV_AUTH` — tabs render, columns are correct per tab (Past shows Exit,
+  Active doesn't), no console errors beyond the expected dev-bypass network 401s.
