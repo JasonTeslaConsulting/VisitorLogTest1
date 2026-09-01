@@ -147,6 +147,32 @@ $$;
 grant execute on function public.list_equipment_item_types() to anon, authenticated;
 ```
 
+A fourth RPC covers the policy/consent text from Section 5. `_sysconfig` is not in the exposed
+schema list from Section 1, and anon/authenticated have no grant on it either — the public
+registration form can only reach it through this RPC, the same as the three lookups above:
+
+```sql
+create or replace function public.get_visitor_policy_text()
+returns table (settingname text, settingvalue text)
+language sql
+security definer
+set search_path = public
+as $$
+  select cs.configurationsettingname, cs.configurationsettingvaluetext
+  from _sysconfig.configurationsetting cs
+  join _sysconfig.configurationgroup cg
+    on cg.configurationgroupid = cs.configurationgroupid
+  where cg.configurationgroupname = 'VisitorLog';
+$$;
+
+grant execute on function public.get_visitor_policy_text() to anon, authenticated;
+```
+
+Run this after Section 5 (it depends on the `VisitorLog` configuration group existing).
+`getPolicyText()` (U001) calls this RPC and maps its two rows
+(`PrivacyPolicyText`/`VideoConsentText`) into `{ privacyPolicyText, videoConsentText }` — it never
+queries `_sysconfig` directly.
+
 ## 4. Reference data — visit purposes and equipment item types
 
 ```sql
