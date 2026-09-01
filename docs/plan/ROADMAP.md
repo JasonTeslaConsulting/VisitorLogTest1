@@ -22,15 +22,15 @@
 | 5 | U005 | On site today | dashboard | `/visits/today` | merged | ✅ | U003 | — |
 | 6 | U006 | Users domain foundation | infra | — | merged | ✅ | — | — |
 | 7 | U007 | User management | datatable | `/admin/users` | merged | ✅ | U006 | — |
-| 8 | U008 | Roles & permissions | form | `/admin/roles` | draft | — | U007 | — |
+| 8 | U008 | Roles & permissions | form | `/admin/roles` | blocked | — | U007 | — |
 
 ## Ready to build now
 
-- U008 — Roles & permissions (`docs/plan/units/008-roles-permissions.md`)
+(none)
 
 ## Blocked
 
-(none)
+- U008 — Roles & permissions — Descoped 2026-09-01 — roles/permissions are setup data, edited directly in the database (see app.md's Out of scope list and db-setup.md §9).
 
 ## Validation
 

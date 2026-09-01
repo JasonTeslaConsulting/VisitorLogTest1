@@ -88,6 +88,11 @@ grant — see `docs/plan/db-setup.md`.
 - A linkable `/visits/:id` detail route (equipment shows via an expandable table row instead)
 - Editing policy/consent text from inside the app (lives in `_sysconfig.configurationsetting`,
   edited via the Supabase dashboard)
+- Role & permission management from inside the app — roles and their screen-level permissions
+  (`_secure.role`/`rolescreen`) are setup data, edited directly in the database, the same way
+  policy/consent text is. **U008 was descoped for this reason** after being planned but before
+  being built — see `docs/plan/units/008-roles-permissions.md`'s own `status: blocked` and
+  `docs/plan/db-setup.md` §9 for the resulting nav-entry cleanup.
 - Visitor photo capture
 - Multi-site / multi-tenant
 

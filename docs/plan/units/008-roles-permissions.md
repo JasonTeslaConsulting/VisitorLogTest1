@@ -2,7 +2,7 @@
 id: U008
 slug: roles-permissions
 title: Roles & permissions
-status: draft
+status: blocked
 kind: form
 tier: leaf
 area: admin
@@ -20,7 +20,7 @@ gate: required
 owner: null
 branch: null
 estimate_files: 3
-blocked_reason: null
+blocked_reason: "Descoped 2026-09-01 — roles/permissions are setup data, edited directly in the database (see app.md's Out of scope list and db-setup.md §9)."
 touches:
   routes: [src/routes/modules/admin.routes.tsx]
   types: []
@@ -35,12 +35,19 @@ touches:
 
 ## Purpose
 
-A role × screen permission matrix, entirely reusing existing framework CRUD rather than building
-new services: `platform/src/services/roles.ts` (`upsertRoleScreen`, `deleteRoleScreen`),
-`platform/src/services/screens.ts` (`getScreens`), and `PERMISSION_OPTIONS` from
-`platform/src/lib/constants/permissions.ts` (`docs/architecture/user-administration.md`). This unit
-adds only the page, the matrix component, and one hook wrapping those framework services — no new
-service file. Appends one route entry to `admin.routes.tsx` (created by U007).
+**Descoped, not built — see `blocked_reason` above.** During this unit's spec-page interview, the
+user decided roles and their screen-level permissions should be setup data, edited directly in the
+database — the same way `_sysconfig`'s policy/consent text already is — rather than through an
+in-app matrix. This section records the original plan intact, as the reason the unit was decomposed
+this way in the first place; it was never built.
+
+Original purpose: a role × screen permission matrix, entirely reusing existing framework CRUD
+rather than building new services: `platform/src/services/roles.ts` (`upsertRoleScreen`,
+`deleteRoleScreen`), `platform/src/services/screens.ts` (`getScreens`), and `PERMISSION_OPTIONS`
+from `platform/src/lib/constants/permissions.ts` (`docs/architecture/user-administration.md`).
+Would have added only the page, the matrix component, and one hook wrapping those framework
+services — no new service file. Would have appended one route entry to `admin.routes.tsx`
+(created by U007).
 
 ## Reusing
 

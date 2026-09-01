@@ -390,6 +390,30 @@ where `isDefault` is true.
 
 ---
 
+## 9. Cleanup — remove the `/admin/roles` nav entry (U008 descoped)
+
+U008 (Roles & permissions) was cancelled after Section 7 had already inserted its `_arch.module`/
+`screen`/`menu` rows and `_secure.rolescreen` grant — see `docs/plan/app.md`'s Out of scope list
+for why (roles and their screen permissions are setup data, edited directly in the database, the
+same way policy/consent text already is). Without a page behind it, that nav entry would 404 for
+the User Admin. Run once, on whichever project already ran Section 7:
+
+```sql
+delete from _secure.rolescreen
+where screenid in (select screenid from _arch.screen where urladdress = '/admin/roles');
+
+delete from _arch.menu
+where screenid in (select screenid from _arch.screen where urladdress = '/admin/roles');
+
+delete from _arch.screen
+where urladdress = '/admin/roles';
+```
+
+Leaves the `Administration` module and the `/admin/users` screen/menu/rolescreen rows untouched —
+only `/admin/roles`'s three rows are removed.
+
+---
+
 ## Verifying each section
 
 After Section 1–3, this should return `[]` (empty, not a permission error) as `anon`:
