@@ -293,5 +293,5 @@ shorthand — `max-w-(--container-max)`, not `max-w-[1280px]`.
 - `docs/architecture/templates.md` — `platform/src/templates/` holds **shells**: the frame of a page and the holes content drops into. A shell
 - `docs/architecture/ui.md` — `platform/src/components/ui/` is a single merged folder: shadcn-derived primitives (kebab-case) and
 - `docs/architecture/user-administration.md` — The framework ships the **service layer** for user/role/screen administration and deliberately
-- `docs/features/home.md` — **Status:** stub — placeholder only.
+- `docs/features/home.md` — **Status:** redirects to `/visits` — not a page of its own.
 

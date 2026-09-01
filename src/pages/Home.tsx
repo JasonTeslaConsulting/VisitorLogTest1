@@ -1,3 +1,5 @@
+import { Navigate } from "react-router";
+
 export const Home = () => {
-  return <div>Home</div>;
+  return <Navigate to="/visits" replace />;
 };
