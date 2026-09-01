@@ -9,7 +9,7 @@
 
 ## Progress
 
-6 / 8 units merged to origin/main.
+7 / 8 units merged to origin/main.
 
 ## Build order
 
@@ -21,16 +21,16 @@
 | 4 | U004 | All visits | datatable | `/visits/manager` | merged | ✅ | U003 | — |
 | 5 | U005 | On site today | dashboard | `/visits/today` | merged | ✅ | U003 | — |
 | 6 | U006 | Users domain foundation | infra | — | merged | ✅ | — | — |
-| 7 | U007 | User management | datatable | `/admin/users` | spec-ready | — | U006 | — |
-| 8 | U008 | Roles & permissions | form | `/admin/roles` | waiting-on-deps | — | U007 | — |
+| 7 | U007 | User management | datatable | `/admin/users` | merged | ✅ | U006 | — |
+| 8 | U008 | Roles & permissions | form | `/admin/roles` | draft | — | U007 | — |
 
 ## Ready to build now
 
-- U007 — User management (`docs/plan/units/007-user-management.md`)
+- U008 — Roles & permissions (`docs/plan/units/008-roles-permissions.md`)
 
 ## Blocked
 
-- U008 — Roles & permissions — waiting on dependencies
+(none)
 
 ## Validation
 
