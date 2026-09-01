@@ -233,3 +233,13 @@ Public — no auth, no role. RLS on `_visitor.visitorregister`/`visitorequipment
   extended exactly as planned (`listCountryDialCodes`, `CountryDialCodeOption`,
   `useCountryDialCodes`), no barrel edits, no side sheet/modal, no Cancel button. No VERIFY retry
   was needed beyond the one `prettier --write` pass on the three new files.
+
+## Delivery
+
+Pushed to `unit/002-public-visitor-registration`. Neither `gh` nor `tea` is available in this
+environment, so the PR needs to be opened by hand:
+https://github.com/JasonTeslaConsulting/VisitorLogTest1/compare/main...unit/002-public-visitor-registration
+
+**Expect this PR's CI to fail on the "Plan roadmap up to date" step** — see this file's
+`## Deviations` and `docs/framework-feedback.md` item 9. This is a confirmed framework bug in
+`docs:plan`'s route-collision check, not a defect in this unit's code; every other CI step passes.
