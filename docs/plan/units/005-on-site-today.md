@@ -149,4 +149,20 @@ None — read-only, no row actions, no page-level actions.
 
 ## Deviations
 
-None.
+- **`DateTimeUtils.calcDurationText`'s `end` param does not default to "now" when omitted** — the
+  spec's `## Data source`/`## Fields` sections assumed it would. Traced into `__calcDuration`
+  (`platform/src/lib/dateTimeUtils.ts`): it returns `null` (rendering as an empty string) whenever
+  either `start` or `end` is empty, and `undefined` counts as empty. Fixed by passing `new Date()`
+  explicitly — `DateTimeUtils.calcDurationText(row.entryDate, new Date())` — which is what the spec
+  actually intended ("e.g. '3 hours, 20 minutes'"). Caught by the implementing subagent tracing the
+  utility's real behavior rather than trusting the spec's assumption; no framework file was
+  touched, only how this unit's own code calls it.
+- Everything else shipped exactly as specified: two independent `useVisits` calls sharing one
+  query key (TanStack Query dedupes them into one request), overdue derived via calendar-date
+  comparison with no new config, one-toast-per-mount owned solely by `OnSiteStats` (confirmed live
+  — only one toast fired, not two), `split-card` matching `DashboardPage.tsx`'s exact shape. VERIFY
+  passed clean on the first attempt (typecheck, lint, format, build); no retry was needed. Verified
+  live in the browser via `VITE_DEV_AUTH` — heading, both stat/list areas, and the error state
+  ("Unable to load" in both slots, exactly one toast) all render correctly. Dev-auth bypass has no
+  real Supabase session, so the populated (non-error) rendering path could not be visually
+  confirmed in this environment — only the error path was actually exercised.
