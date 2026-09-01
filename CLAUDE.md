@@ -2,11 +2,11 @@
 
 ## Project Overview
 
-<!-- [PROJECT] Replace with 3-5 lines: what the app does/who uses it, auth method
-     (entra/otp/password), desktop- or mobile-first, unusual constraints (public pages,
-     multi-tenant, etc.). Example: "Guest registration portal for office reception. Public
-     visitors register via QR code; Staff/Manager/Admin via Entra ID. Mobile-first (tablet at
-     reception). Multi-tenant (one Supabase project, multiple client organisations)." -->
+Visitor log for Tesla Consulting's office. Visitors register themselves on arrival via a public
+form (host, purpose, brought equipment); Staff see the visits they host, the Office Manager sees
+every visit and checks visitors out, and a User Admin manages accounts and roles. Auth is
+password-based. Desktop-first for the three internal pages, but the public registration form must
+work at 375px since it's reached by a QR code at reception. Single-tenant.
 
 ## Before Every Task
 
