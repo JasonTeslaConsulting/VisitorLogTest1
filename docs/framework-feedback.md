@@ -271,6 +271,33 @@ red on this one step; that's expected until this fix lands, not a sign the unit 
 
 ---
 
+## 10. `platform/framework.json`'s ownership manifest is missing `docs/plan/*.md`
+
+**Where:** `platform/framework.json`'s `"app"` array. It lists `"docs/plan/units/**"` and
+`"docs/wip/**"`, but the file's own comment two sections up says: "docs/wip/ + docs/plan/ are
+otherwise app-owned, so only their framework files are listed" — the `"app"` array doesn't
+actually carry a pattern matching that claim for anything in `docs/plan/` above the `units/`
+subdirectory.
+
+**What happened:** `npm run framework:verify -- --check` — the same command CI runs as its
+"Framework boundary intact" step — fails with "4 file(s) have no declared owner":
+`docs/plan/app.md`, `docs/plan/db-setup.md`, `docs/plan/ROADMAP.md` (all created by `plan-app` in
+this app's very first PR, so **this has likely been failing on `main` since before this session's
+work started**, not something introduced today), plus `docs/framework-feedback.md` (this file —
+new, and not matched by any existing pattern either, being outside every established `docs/`
+convention).
+
+**Suggested fix:** add a pattern covering the rest of `docs/plan/` to the `"app"` array —
+`"docs/plan/*.md"` (or `"docs/plan/**"` if `units/**`'s already-explicit entry is considered
+redundant then and removed) — matching what the comment already claims. Separately, decide where
+an ad hoc top-level handover/notes doc like this one is supposed to live and how it gets
+classified — `docs/DECISIONS.md`/`docs/OWNERS.md` got individually `seeded` entries; either this
+file should join them, or `plan-app`/`build-app` should define a standing convention (with its own
+pattern) for this exact "collect framework feedback for later batch review" use case, since it's a
+generalizable need for any app built from this skeleton, not specific to Visitor Log.
+
+---
+
 ## Not included here (app-specific, not framework/skill gaps)
 
 - The `_visitor` schema's missing FKs (`visitorregister.hostid`/`visitpurposeid` have no declared
