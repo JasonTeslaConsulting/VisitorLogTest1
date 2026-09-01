@@ -20,7 +20,7 @@
 | 3 | U003 | My visits | datatable | `/visits` | merged | ✅ | U001 | — |
 | 4 | U004 | All visits | datatable | `/visits/manager` | merged | ✅ | U003 | — |
 | 5 | U005 | On site today | dashboard | `/visits/today` | merged | ✅ | U003 | — |
-| 6 | U006 | Users domain foundation | infra | — | draft | — | — | — |
+| 6 | U006 | Users domain foundation | infra | — | spec-ready | — | — | — |
 | 7 | U007 | User management | datatable | `/admin/users` | waiting-on-deps | — | U006 | — |
 | 8 | U008 | Roles & permissions | form | `/admin/roles` | waiting-on-deps | — | U007 | — |
 
