@@ -360,6 +360,34 @@ write a module-scope `supabase` access as an AI one, and nothing currently stops
 
 ---
 
+## 12. `db-setup.md` needs an append-only editing convention, stated up front
+
+**Where:** `plan-app`'s Round 6-equivalent, wherever it's decided this app wants "one DB
+prerequisites doc" (see item 7, which already flags this doc type as an ad hoc convention this
+session invented rather than something `docs/plan/README.md` defines).
+
+**What happened:** across this build, new SQL was discovered three separate times after the
+original `db-setup.md` was written and already run once (a fourth RPC while building U001, a fifth
+while building U002, plus several corrections to already-written statements). Each new RPC got
+spliced into the middle of an existing numbered section's prose rather than appended, because
+nothing said not to. The user eventually had to ask directly — "I don't know which ones are the
+new ones... reorder them so users just need to find the latest ones at the bottom" — which is a
+process fix that should have been the convention from the first line of the doc, not something
+retrofitted after confusion. Fixed in this app by moving the two spliced-in RPCs to a new trailing
+`## 8.` section and adding an explicit rule at the top: a later addition is always a new numbered
+section appended after the last one, never edited into an earlier section once it may have been
+run.
+
+**Suggested fix:** whichever skill or template generates a `db-setup.md`-style doc should write
+that append-only rule into the doc's own header from the start (the exact wording added to this
+app's copy is a reasonable default to copy), the same way `docs/plan/README.md` already documents
+the append-only convention for `src/types/index.ts`'s barrel and `docs/architecture/inventory.md`.
+A **correction** to already-written SQL (a bug fix, not new SQL) is a different case and can still
+edit the section it's fixing — the append-only rule is specifically about *new* statements that
+weren't there before, not about leaving a known-wrong statement in place.
+
+---
+
 ## Not included here (app-specific, not framework/skill gaps)
 
 - The `_visitor` schema's missing FKs (`visitorregister.hostid`/`visitpurposeid` have no declared
