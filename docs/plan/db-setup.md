@@ -293,16 +293,15 @@ where s.urladdress = v.url;
 -- write/delete distinction at the screen level (mutations are row actions, gated by RLS).
 insert into _secure.rolescreen (roleid, screenid, readflag, writeflag, deleteflag, createdby, modifiedby)
 select r.roleid, s.screenid, true, v.write, v.write, 'setup', 'setup'
-from _secure.role r
-join _arch.screen s on s.urladdress = v.url
-, (values
+from _secure.role r, _arch.screen s, (values
   ('Staff', '/visits', false),
   ('Office Manager', '/visits/manager', true),
   ('Office Manager', '/visits/today', false),
   ('User Admin', '/admin/users', true),
   ('User Admin', '/admin/roles', true)
 ) as v(role, url, write)
-where r.rolename = v.role;
+where r.rolename = v.role
+  and s.urladdress = v.url;
 ```
 
 `useNavMenu()` renders whatever `_arch.menu`/`screen`/`module` rows exist regardless of role — the
