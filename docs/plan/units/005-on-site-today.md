@@ -11,7 +11,7 @@ access: protected
 required_role: ROLES.OFFICE_MANAGER
 layout: default
 template: split-card
-template_props: { ratio: equal }
+template_props: { ratio: aside-left }
 domain: visitor
 data_mode: live
 entities: [visitorregister]
@@ -92,10 +92,15 @@ n/a — read-only dashboard.
 
 ## Layout
 
-`split-card`, `ratio: "equal"`, title "On Site Today". Main area (`children`): "Currently on site"
-stat block, a `Separator`, "Overdue" stat block — identical structure to
-`DashboardPage.tsx`'s "Awaiting approval" main area. Aside: a heading ("On site now") followed by
-the compact list. No subtitle.
+`split-card`, `ratio: "aside-left"`, title "On Site Today" — changed twice from the
+originally-approved `ratio: "equal"` after seeing it built. Final arrangement: **aside (narrow,
+left)** holds the "Summary" heading and `OnSiteStats` (headcount, a `Separator`, then overdue) —
+the compact content fits a narrow column fine. **Main (wide, right, `children`)** holds the "On
+site now" heading and `OnSiteList` — the list needs the width for name, duration, and the overdue
+badge to sit comfortably on one line. This is the reverse of the DashboardPage sample's own
+placement (stats in `children`, list in `aside`) — the sample's `ratio: "equal"` made either side's
+width equally suitable, but `aside-left`'s asymmetry means the wider slot should hold whichever
+content actually needs the room, not just mirror the sample. No subtitle.
 
 ## Actions
 

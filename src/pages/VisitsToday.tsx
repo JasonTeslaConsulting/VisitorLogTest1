@@ -5,15 +5,18 @@ export const VisitsToday = () => {
   return (
     <SplitCardTemplate
       title="On Site Today"
-      ratio="equal"
+      ratio="aside-left"
       aside={
         <div className="space-y-4">
-          <h2 className="font-heading text-base font-medium">On site now</h2>
-          <OnSiteList />
+          <h2 className="font-heading text-base font-medium">Summary</h2>
+          <OnSiteStats />
         </div>
       }
     >
-      <OnSiteStats />
+      <div className="space-y-4">
+        <h2 className="font-heading text-base font-medium">On site now</h2>
+        <OnSiteList />
+      </div>
     </SplitCardTemplate>
   );
 };
