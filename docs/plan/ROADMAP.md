@@ -17,7 +17,7 @@
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | U001 | Visitor domain foundation | infra | — | merged | ✅ | — | — |
 | 2 | U002 | Public visitor registration | form | `/register` | merged | ✅ | U001 | — |
-| 3 | U003 | My visits | datatable | `/visits` | draft | — | U001 | — |
+| 3 | U003 | My visits | datatable | `/visits` | spec-ready | — | U001 | — |
 | 4 | U004 | All visits | datatable | `/visits/manager` | waiting-on-deps | — | U003 | — |
 | 5 | U005 | On site today | dashboard | `/visits/today` | waiting-on-deps | — | U003 | — |
 | 6 | U006 | Users domain foundation | infra | — | draft | — | — | — |
@@ -39,4 +39,5 @@
 ## Validation
 
 - docs/plan/units/002-public-visitor-registration.md: route `/register` already exists in docs/architecture/inventory.md
+- docs/plan/units/003-my-visits.md: route `/visits` already exists in docs/architecture/inventory.md
 
