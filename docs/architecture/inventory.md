@@ -16,6 +16,7 @@ as reference. Framework files are read-only in a portal and imported via
 
 | Path | Owner | Access | Required role | Layout | Module |
 | --- | --- | --- | --- | --- | --- |
+| `/admin/users` | **app** | authenticated | ROLES.USER_ADMIN | default | src/routes/modules/admin.routes.tsx |
 | `/home` | **app** | authenticated | — | default | src/routes/modules/home.routes.tsx |
 | `/register` | **app** | public | — | none | src/routes/modules/register.routes.tsx |
 | `/visits` | **app** | authenticated | ROLES.STAFF | default | src/routes/modules/visits.routes.tsx |
@@ -164,6 +165,7 @@ as reference. Framework files are read-only in a portal and imported via
 
 - `src/pages/Home.tsx`
 - `src/pages/Register.tsx`
+- `src/pages/UserManagement.tsx`
 - `src/pages/Visits.tsx`
 - `src/pages/VisitsManager.tsx`
 - `src/pages/VisitsToday.tsx`
