@@ -11,8 +11,11 @@ delete the items you've handled. Add to it; don't let it silently grow stale.
 Each item: where the problem is, what happened (with evidence), a suggested fix, and why it
 matters beyond this one app.
 
-**⚠ Item 9 is CI-blocking, not just a process gap** — it fails a required (non-`continue-on-error`)
-GitHub Actions step on every route-bearing unit's PR, not only this app's. Prioritize it.
+**⚠ Items 9 and 11 are higher severity than the rest.** Item 9 fails a required
+(non-`continue-on-error`) GitHub Actions step on every route-bearing unit's PR, not only this
+app's. Item 11 already crashed this app's every page in front of the user before it was found and
+fixed — it's fixed here, but nothing stops the same pattern in the next app built from this
+skeleton. Prioritize both.
 
 ---
 
@@ -295,6 +298,65 @@ classified — `docs/DECISIONS.md`/`docs/OWNERS.md` got individually `seeded` en
 file should join them, or `plan-app`/`build-app` should define a standing convention (with its own
 pattern) for this exact "collect framework feedback for later batch review" use case, since it's a
 generalizable need for any app built from this skeleton, not specific to Visitor Log.
+
+---
+
+## 11. ⚠ App-crashing pattern — accessing `supabase.<prop>` at module scope in a service file
+
+**Where:** no rule currently forbids this. Belongs in `.claude/rules/service-rules.md` (the file
+that governs every `src/services/**`/`platform/src/services/**` file), and the underlying
+mechanism belongs in `docs/architecture/routing.md` or `auth.md` so the *why* is documented
+somewhere, not just the *don't*.
+
+**What happened:** U001's implementing subagent added, in `src/services/visitor.ts`:
+
+```ts
+const rpc = supabase.rpc.bind(supabase) as unknown as UntypedRpc;
+```
+
+at **module top level** (a workaround for four RPCs not yet present in the generated Supabase
+types — see item elsewhere in this doc about that gap). `supabase` (`platform/src/integrations/
+supabase/client.ts`) is a `Proxy` whose `get` trap calls `getSupabaseClient()`, which **throws**
+if `appConfig` hasn't finished loading (`appConfig.config.supabase.supabaseUrl` still empty).
+`src/services/visitor.ts` gets imported eagerly by the route registry's `import.meta.glob` (used
+to build the whole route tree at module scope — `docs/architecture/routing.md`), which runs
+*before* `main.tsx`'s `await appConfig.initialize()` resolves. Net effect: **the entire app crashed
+before React could mount, on every route** — not a broken page, a blank white screen with one
+uncaught error in the console, reported by the user as "Supabase configuration not loaded" and
+initially indistinguishable from an `appConfig` loading-order bug. It reproduced identically on a
+completely fresh dev server with zero prior state, ruling out HMR staleness before the real cause
+was found by tracing the exact throw site to a module-top-level property access.
+
+Fixed in this app by deferring the property access into the function body:
+
+```ts
+const rpc: UntypedRpc = (fn) => (supabase.rpc as unknown as UntypedRpc)(fn);
+```
+
+**Why this is a framework-level gap, not just one subagent's mistake:** nothing about this pattern
+is specific to `rpc` or to a workaround for missing types. `const x = supabase.auth`,
+`const client = supabase.schema("_visitor")`, or any other top-level `const ... = supabase.<...>`
+in *any* service file has the identical failure mode, because the danger is the combination of two
+framework decisions that are individually reasonable: (a) `supabase` is a **lazy** Proxy so a
+missing config produces a clear thrown error instead of `undefined` propagating silently, and
+(b) route modules — and everything they transitively import, including every service a page's
+components use — are imported **eagerly** at app bootstrap so `createBrowserRouter` can build the
+whole tree at module scope. Neither (a) nor (b) is wrong alone; a human author is just as likely to
+write a module-scope `supabase` access as an AI one, and nothing currently stops them.
+
+**Suggested fix:**
+1. Add an explicit rule to `.claude/rules/service-rules.md`: never access any property of
+   `supabase` outside a function body — only inside an exported function's implementation, never
+   in a top-level `const`. State the reason (eager route-module imports run before `appConfig`
+   resolves), not just the rule, so it survives being copied into a different context.
+2. Consider whether this is mechanically enforceable — an ESLint rule flagging
+   `MemberExpression` on an identifier named `supabase` outside a `FunctionDeclaration`/
+   `ArrowFunctionExpression` body would catch it at author time instead of at first page load,
+   which is exactly the kind of thing this repo's other `local/*` rules already do for comparable
+   footguns (`local/no-inline-edit-in-column`, `local/require-unsaved-guard`).
+3. Whoever eventually rewrites `.claude/skills/call-api/SKILL.md` (item 4) should include this as
+   a worked "don't do this" example — it's the single most likely place an implementing agent
+   reaches for a `supabase.<method>` reference to cache.
 
 ---
 
