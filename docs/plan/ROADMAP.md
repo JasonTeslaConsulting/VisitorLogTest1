@@ -15,7 +15,7 @@
 
 | # | Id | Unit | Kind | Route | Status | Merged | Depends on | Branch |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | U001 | Visitor domain foundation | infra | — | draft | — | — | — |
+| 1 | U001 | Visitor domain foundation | infra | — | spec-ready | — | — | — |
 | 2 | U002 | Public visitor registration | form | `/register` | waiting-on-deps | — | U001 | — |
 | 3 | U003 | My visits | datatable | `/visits` | waiting-on-deps | — | U001 | — |
 | 4 | U004 | All visits | datatable | `/visits/manager` | waiting-on-deps | — | U003 | — |

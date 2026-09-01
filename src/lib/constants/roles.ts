@@ -8,4 +8,8 @@
 //
 // Entries sorted alphabetically by key — sorted lists conflict less than appending at a marker
 // when two branches add a role at the same time.
-export const ROLES = {} as const;
+export const ROLES = {
+  OFFICE_MANAGER: "Office Manager",
+  STAFF: "Staff",
+  USER_ADMIN: "User Admin",
+} as const;
