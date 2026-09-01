@@ -1,6 +1,6 @@
 # Home
 
-**Status:** redirects to `/visits` — not a page of its own.
+**Status:** redirects to the visitor log's landing page — not a page of its own.
 
 - Page: `src/pages/Home.tsx`
 - Route: `/home` (protected, no role requirement beyond being signed in)
