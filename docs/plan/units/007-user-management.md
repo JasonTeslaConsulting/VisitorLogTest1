@@ -174,4 +174,22 @@ one when the other is hidden → renders as a single icon button.
 
 ## Deviations
 
-None.
+- **"Deactivate" does not set `RowAction.destructive: true`.** `RowActionsCell` (framework-owned)
+  auto-intercepts any `destructive` action with its own fixed-copy `ConfirmDialog` ("This will
+  deactivate the selected record. This cannot be undone."), with no way to supply the spec's exact
+  wording ("Deactivate [full name]? They will no longer be able to sign in."). Followed the same
+  precedent already established by U003's "Log exit" action: the row action calls `onDeactivate`
+  directly, and the page owns its own `ConfirmDialog` with the spec's exact copy. Still routes
+  through `ConfirmDialog` per `components-rules.md` — just not through the framework's
+  auto-wired path.
+- Everything else shipped exactly as specified: two separate sheets, `mode="client"` with the
+  page-level status filter (`ScopedListPage.tsx`'s pattern — `DataTable` doesn't filter
+  automatically in client mode), Edit roles hidden with no linked `applicationUserId`, Deactivate
+  hidden once already deactivated, both sheets guarded with `useUnsavedChangesGuard`. VERIFY passed
+  clean on the first attempt (typecheck, lint — including `local/require-unsaved-guard` on both
+  sheets — format, build); no retry was needed. Verified live in the browser via `VITE_DEV_AUTH`:
+  page renders all 5 columns and the empty state, Add User sheet opens with the employment-start
+  date correctly defaulted to today, and typing then pressing Escape correctly triggers the
+  "Discard your changes?" dialog with the entered value preserved behind it. Dev-auth bypass has no
+  real Supabase session, so only the error/empty state was exercised end-to-end, not a populated
+  table or an actual mutation.
