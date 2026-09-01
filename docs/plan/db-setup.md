@@ -198,7 +198,7 @@ select
   cg.configurationgroupid,
   v.name,
   v.description,
-  (select attributedatatypeid from _common.attributedatatype where attributedatatypename = 'Text' limit 1),
+  (select attributedatatypeid from _common.attributedatatype where attributedatatypename = 'varchar' limit 1),
   v.value,
   'setup',
   'setup'
@@ -218,9 +218,10 @@ resolve when this SQL runs directly against Postgres (DBeaver, `psql`, the Supab
 service-role connection) rather than through PostgREST. Every insert from here on names them
 explicitly for the same reason.
 
-Check `_common.attributedatatype`'s actual `attributedatatypename` values before running this — the
-literal `'Text'` above is a guess at the row `configurationsettingvaluetext` pairs with; adjust to
-match what that table actually contains.
+`attributedatatypename = 'varchar'` is confirmed against the real `_common.attributedatatype` rows
+— its values are literal type strings (`varchar`, `boolean`, `integer`, `date`, `datetime`, `time`,
+`money`, `numeric(25,N)` at several scales), not a generic `'Text'` label. `varchar` is the row that
+pairs with `configurationsettingvaluetext`.
 
 `getPolicyText()` (U001) reads these two settings by name and the app snapshots the returned text
 into `visitorregister.privacypolicycontent`/`consentvideocontent` on submit — this is the source of
