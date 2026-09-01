@@ -78,7 +78,8 @@ prerequisites): `_visitor.visitorregister`, `_visitor.visitorequipment`.
 
 **RPCs** (existing — `docs/plan/db-setup.md` §3, all `SECURITY DEFINER`, granted to `anon` and
 `authenticated`): `public.list_visit_hosts()`, `public.list_visit_purposes()`,
-`public.list_equipment_item_types()`, `public.get_visitor_policy_text()`.
+`public.list_equipment_item_types()`. `public.get_visitor_policy_text()` is the same shape but
+lives in §8 (added after §3 was first written — see that doc's append-only note).
 
 **`src/types/visitor.ts`** — new file:
 
@@ -253,9 +254,9 @@ consuming page's own route guard.
   against the database as of this build (the fourth one, `get_visitor_policy_text`, was added to
   that doc *after* the DB setup pass that preceded this unit). `src/services/visitor.ts` adds a
   small file-local `UntypedRpc` re-typing (using `unknown`, never `any`) around `supabase.rpc` so
-  these four calls compile ahead of regeneration. Once `docs/plan/db-setup.md` §3 is run and `npm
-  run gen-supabase-types` picks the functions up, drop `UntypedRpc` and call `supabase.rpc(...)`
-  directly — the four exported functions' signatures don't change.
+  these four calls compile ahead of regeneration. Once `docs/plan/db-setup.md` §3/§8 is run and
+  `npm run gen-supabase-types` picks the functions up, drop `UntypedRpc` and call
+  `supabase.rpc(...)` directly — the four exported functions' signatures don't change.
 - **`get_visitor_policy_text`'s return column names (`settingname`, `settingvalue`) are inferred,
   not confirmed against a live schema** — `docs/plan/db-setup.md` defines this RPC's SQL (so the
   names are pinned there), but nothing has executed it yet. Verify when U002 builds and calls

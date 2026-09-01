@@ -9,14 +9,14 @@
 
 ## Progress
 
-1 / 8 units merged to origin/main.
+2 / 8 units merged to origin/main.
 
 ## Build order
 
 | # | Id | Unit | Kind | Route | Status | Merged | Depends on | Branch |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | U001 | Visitor domain foundation | infra | — | merged | ✅ | — | — |
-| 2 | U002 | Public visitor registration | form | `/register` | spec-ready | — | U001 | — |
+| 2 | U002 | Public visitor registration | form | `/register` | merged | ✅ | U001 | — |
 | 3 | U003 | My visits | datatable | `/visits` | draft | — | U001 | — |
 | 4 | U004 | All visits | datatable | `/visits/manager` | waiting-on-deps | — | U003 | — |
 | 5 | U005 | On site today | dashboard | `/visits/today` | waiting-on-deps | — | U003 | — |
@@ -26,7 +26,6 @@
 
 ## Ready to build now
 
-- U002 — Public visitor registration (`docs/plan/units/002-public-visitor-registration.md`)
 - U003 — My visits (`docs/plan/units/003-my-visits.md`)
 - U006 — Users domain foundation (`docs/plan/units/006-users-domain-foundation.md`)
 

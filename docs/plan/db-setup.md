@@ -8,10 +8,18 @@ is applied automatically — this repo never applies migrations for you
 (`hauccbcyondtbmzscuiw`) before the unit that needs it builds.
 
 **Critical path:** nothing in Section 1 exists yet, and nothing built against `_visitor` can even
-return a row until it's done — run Section 1 through 3 before U001, not before U002.
+return a row until it's done — run Section 1 through 3 before U001, and Section 8 before U002's
+form actually works end to end (U001 itself builds fine without it — see its own Deviations).
 
 Column names throughout are taken from the already-generated `src/integrations/supabase/types.ts`
 — this schema exists; nothing here is `CREATE TABLE`.
+
+**Append-only, oldest to newest:** sections are numbered in the order they were written, never
+renumbered or edited in place once run. New SQL discovered while building a later unit always
+becomes a **new section appended after the last one**, even if it logically belongs earlier (e.g.
+another RPC) — never spliced into an existing section. This means the newest thing to run is always
+the highest-numbered section at the bottom, and if you've already run everything through section
+`N`, you only need to check for sections above `N`, not re-read the whole file for changes.
 
 ---
 
@@ -146,62 +154,6 @@ $$;
 
 grant execute on function public.list_equipment_item_types() to anon, authenticated;
 ```
-
-A fourth RPC covers the policy/consent text from Section 5. `_sysconfig` is not in the exposed
-schema list from Section 1, and anon/authenticated have no grant on it either — the public
-registration form can only reach it through this RPC, the same as the three lookups above:
-
-```sql
-create or replace function public.get_visitor_policy_text()
-returns table (settingname text, settingvalue text)
-language sql
-security definer
-set search_path = public
-as $$
-  select cs.configurationsettingname, cs.configurationsettingvaluetext
-  from _sysconfig.configurationsetting cs
-  join _sysconfig.configurationgroup cg
-    on cg.configurationgroupid = cs.configurationgroupid
-  where cg.configurationgroupname = 'VisitorLog';
-$$;
-
-grant execute on function public.get_visitor_policy_text() to anon, authenticated;
-```
-
-Run this after Section 5 (it depends on the `VisitorLog` configuration group existing).
-`getPolicyText()` (U001) calls this RPC and maps its two rows
-(`PrivacyPolicyText`/`VideoConsentText`) into `{ privacyPolicyText, videoConsentText }` — it never
-queries `_sysconfig` directly.
-
-A fifth RPC covers the mobile-number country dial code for U002's public form.
-`countrydialcode` has a real FK to `country` (`fk_countrydialcode_country`), so this one embeds
-safely once inside the RPC's own definer context — the RPC boundary is what anon actually needs,
-not the embed:
-
-```sql
-create or replace function public.list_country_dial_codes()
-returns table (
-  countrydialid uuid,
-  countrydialcode text,
-  countryname text,
-  isdefault boolean
-)
-language sql
-security definer
-set search_path = public
-as $$
-  select cdc.countrydialid, cdc.countrydialcode, c.countryname, c.isdefault
-  from _common.countrydialcode cdc
-  join _common.country c on c.countryid = cdc.countryid
-  order by c.isdefault desc, c.countryname;
-$$;
-
-grant execute on function public.list_country_dial_codes() to anon, authenticated;
-```
-
-`listCountryDialCodes()` (U002, added to U001's `src/services/visitor.ts`) calls this and maps it
-to `{ countryDialId, countryDialCode, countryName, isDefault }[]`; the form pre-selects the row
-where `isDefault` is true.
 
 ## 4. Reference data — visit purposes and equipment item types
 
@@ -369,6 +321,75 @@ still correct, just redundant with that filter rather than the only gate). The r
 
 ---
 
+## 8. Additional RPCs — added after the initial setup pass
+
+Sections 1–7 above are the original setup pass. Everything below is new SQL discovered as later
+units were built, appended here rather than spliced into an earlier section — **once you've run a
+section, this doc never edits it again; a later addition always becomes a new numbered section at
+the end.** If you've already run every section through the highest number you last saw, you only
+need to run what's below that point next time, not re-read the whole doc looking for a change.
+
+### 8.1 — `get_visitor_policy_text()` (needed by U001/U002)
+
+`_sysconfig` is not in the exposed schema list from Section 1, and anon/authenticated have no
+grant on it either — the public registration form can only reach the policy/consent text through
+this RPC, the same as Section 3's three lookups. Depends on Section 5's `VisitorLog`
+configuration group existing, which it does by the time you reach this section in order.
+
+```sql
+create or replace function public.get_visitor_policy_text()
+returns table (settingname text, settingvalue text)
+language sql
+security definer
+set search_path = public
+as $$
+  select cs.configurationsettingname, cs.configurationsettingvaluetext
+  from _sysconfig.configurationsetting cs
+  join _sysconfig.configurationgroup cg
+    on cg.configurationgroupid = cs.configurationgroupid
+  where cg.configurationgroupname = 'VisitorLog';
+$$;
+
+grant execute on function public.get_visitor_policy_text() to anon, authenticated;
+```
+
+`getPolicyText()` (U001) calls this RPC and maps its two rows
+(`PrivacyPolicyText`/`VideoConsentText`) into `{ privacyPolicyText, videoConsentText }` — it never
+queries `_sysconfig` directly.
+
+### 8.2 — `list_country_dial_codes()` (needed by U002)
+
+Covers the mobile-number country dial code for U002's public form. `countrydialcode` has a real FK
+to `country` (`fk_countrydialcode_country`), so this one embeds safely once inside the RPC's own
+definer context — the RPC boundary is what anon actually needs, not the embed.
+
+```sql
+create or replace function public.list_country_dial_codes()
+returns table (
+  countrydialid uuid,
+  countrydialcode text,
+  countryname text,
+  isdefault boolean
+)
+language sql
+security definer
+set search_path = public
+as $$
+  select cdc.countrydialid, cdc.countrydialcode, c.countryname, c.isdefault
+  from _common.countrydialcode cdc
+  join _common.country c on c.countryid = cdc.countryid
+  order by c.isdefault desc, c.countryname;
+$$;
+
+grant execute on function public.list_country_dial_codes() to anon, authenticated;
+```
+
+`listCountryDialCodes()` (U002, added to U001's `src/services/visitor.ts`) calls this and maps it
+to `{ countryDialId, countryDialCode, countryName, isDefault }[]`; the form pre-selects the row
+where `isDefault` is true.
+
+---
+
 ## Verifying each section
 
 After Section 1–3, this should return `[]` (empty, not a permission error) as `anon`:
@@ -381,3 +402,12 @@ curl -s -H "apikey: $SUPABASE_ANON_KEY" \
 After Section 6–7, signing in as a user with the `Office Manager` role should show "All Visits" and
 "On Site Today" in the navbar, and `/visits` should render for a `Staff`-only account without
 bouncing to `/`.
+
+After Section 8, this should also return `[]` as `anon`:
+
+```bash
+curl -s -H "apikey: $SUPABASE_ANON_KEY" \
+  "$SUPABASE_URL/rest/v1/rpc/get_visitor_policy_text" -X POST -H "Content-Type: application/json" -d '{}'
+curl -s -H "apikey: $SUPABASE_ANON_KEY" \
+  "$SUPABASE_URL/rest/v1/rpc/list_country_dial_codes" -X POST -H "Content-Type: application/json" -d '{}'
+```

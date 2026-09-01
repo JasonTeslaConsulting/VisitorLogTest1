@@ -60,7 +60,7 @@ lookup:
   existing, via `useVisitHosts()`/`useVisitPurposes()`/`useEquipmentItemTypes()`/`usePolicyText()`
   (`useVisitLookups.ts`), all `staleTime: STALE_TIMES.STATIC`
 - **New:** `listCountryDialCodes(): Promise<CountryDialCodeOption[]>` — calls
-  `public.list_country_dial_codes()` (`docs/plan/db-setup.md` §3's fifth RPC), maps to
+  `public.list_country_dial_codes()` (`docs/plan/db-setup.md` §8.2), maps to
   `{ countryDialId, countryDialCode, countryName, isDefault }[]`. Add the type
   `CountryDialCodeOption` to `src/types/visitor.ts` and a `useCountryDialCodes()` hook (same
   `STALE_TIMES.STATIC` tier) to `useVisitLookups.ts` — both are additions to existing U001 files,
