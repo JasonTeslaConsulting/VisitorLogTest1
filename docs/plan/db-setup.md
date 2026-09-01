@@ -180,22 +180,28 @@ where referencedatatypename = 'EquipmentItemType';
 Adjust the option lists to match what reception actually wants before running this — these are
 placeholders, not requirements gathered from the user.
 
+Note: these two inserts still rely on `createdby`/`modifiedby`'s DB default rather than naming
+`'setup'` explicitly, unlike every insert from Section 5 onward — see that section's note on why.
+Add the same two columns here too if this hits the same failure when run outside PostgREST.
+
 ## 5. Policy and consent text
 
 ```sql
-insert into _sysconfig.configurationgroup (configurationgroupname)
-values ('VisitorLog')
+insert into _sysconfig.configurationgroup (configurationgroupname, createdby, modifiedby)
+values ('VisitorLog', 'setup', 'setup')
 on conflict do nothing;
 
 insert into _sysconfig.configurationsetting
   (configurationgroupid, configurationsettingname, configurationsettingdescription,
-   attributedatatypeid, configurationsettingvaluetext)
+   attributedatatypeid, configurationsettingvaluetext, createdby, modifiedby)
 select
   cg.configurationgroupid,
   v.name,
   v.description,
   (select attributedatatypeid from _common.attributedatatype where attributedatatypename = 'Text' limit 1),
-  v.value
+  v.value,
+  'setup',
+  'setup'
 from _sysconfig.configurationgroup cg, (values
   ('PrivacyPolicyText', 'Privacy policy shown on the visitor registration form',
     'Replace with the real privacy policy text.'),
@@ -204,6 +210,13 @@ from _sysconfig.configurationgroup cg, (values
 ) as v(name, description, value)
 where cg.configurationgroupname = 'VisitorLog';
 ```
+
+`createdby`/`modifiedby` are set to the literal `'setup'` here instead of left to their DB default.
+`docs/architecture/auth.md` notes those columns default to `public.current_orguser()` — which
+resolves from an authenticated Supabase session (`auth.uid()`/RLS context) and has nothing to
+resolve when this SQL runs directly against Postgres (DBeaver, `psql`, the Supabase SQL editor's
+service-role connection) rather than through PostgREST. Every insert from here on names them
+explicitly for the same reason.
 
 Check `_common.attributedatatype`'s actual `attributedatatypename` values before running this — the
 literal `'Text'` above is a guess at the row `configurationsettingvaluetext` pairs with; adjust to
@@ -216,11 +229,11 @@ truth the interview asked for ("`_sysconfig.configurationsetting` yea").
 ## 6. Roles
 
 ```sql
-insert into _secure.role (rolecode, rolename)
+insert into _secure.role (rolecode, rolename, createdby, modifiedby)
 values
-  ('STAFF', 'Staff'),
-  ('OFFICE_MANAGER', 'Office Manager'),
-  ('USER_ADMIN', 'User Admin')
+  ('STAFF', 'Staff', 'setup', 'setup'),
+  ('OFFICE_MANAGER', 'Office Manager', 'setup', 'setup'),
+  ('USER_ADMIN', 'User Admin', 'setup', 'setup')
 on conflict (rolecode) do nothing;
 ```
 
@@ -231,8 +244,8 @@ Grant yourself (or whoever tests the build) at least one role before U003 onward
 route bounces at `ProtectedRoute`:
 
 ```sql
-insert into _secure.applicationuserrole (applicationuserid, roleid)
-select au.applicationuserid, r.roleid
+insert into _secure.applicationuserrole (applicationuserid, roleid, createdby, modifiedby)
+select au.applicationuserid, r.roleid, 'setup', 'setup'
 from _secure.applicationuser au
 join _secure.organizationuser ou on ou.organizationuserid = au.organizationuserid
 join _secure.role r on r.rolename = 'Office Manager'
@@ -245,13 +258,13 @@ One module (`Visitor Log`) holding the visitor-facing screens, one (`Administrat
 admin screens — or reuse an existing module if one already fits; check `_arch.module` first.
 
 ```sql
-insert into _arch.module (modulename, sortorder)
-values ('Visitor Log', 10), ('Administration', 20)
+insert into _arch.module (modulename, sortorder, createdby, modifiedby)
+values ('Visitor Log', 10, 'setup', 'setup'), ('Administration', 20, 'setup', 'setup')
 on conflict do nothing;
 
 -- Screens — urladdress must match each unit's `route:` frontmatter exactly.
-insert into _arch.screen (moduleid, screenname, screentitle, urladdress, sortorder)
-select m.moduleid, v.name, v.title, v.url, v.sortorder
+insert into _arch.screen (moduleid, screenname, screentitle, urladdress, sortorder, createdby, modifiedby)
+select m.moduleid, v.name, v.title, v.url, v.sortorder, 'setup', 'setup'
 from _arch.module m, (values
   ('Visitor Log', 'MyVisits',    'My Visits',           '/visits',         1),
   ('Visitor Log', 'AllVisits',   'All Visits',          '/visits/manager', 2),
@@ -263,8 +276,8 @@ where m.modulename = v.module;
 
 -- Menu entries — one per screen, menuicon values are MENU_ICON_MAP keys
 -- (platform/src/app/layout/MenuIcon.tsx), e.g. "Home", not "PiHouse".
-insert into _arch.menu (screenid, menuname, menudescription, menuicon, menuorder)
-select s.screenid, s.screentitle, s.screentitle, v.icon, s.sortorder
+insert into _arch.menu (screenid, menuname, menudescription, menuicon, menuorder, createdby, modifiedby)
+select s.screenid, s.screentitle, s.screentitle, v.icon, s.sortorder, 'setup', 'setup'
 from _arch.screen s, (values
   ('/visits', 'ClipboardCheck'),
   ('/visits/manager', 'ClipboardList'),
@@ -277,8 +290,8 @@ where s.urladdress = v.url;
 -- Screen access — Staff sees only "My Visits"; Office Manager sees the other two visitor
 -- screens; User Admin sees both admin screens. readflag only — none of these five pages has a
 -- write/delete distinction at the screen level (mutations are row actions, gated by RLS).
-insert into _secure.rolescreen (roleid, screenid, readflag, writeflag, deleteflag)
-select r.roleid, s.screenid, true, v.write, v.write
+insert into _secure.rolescreen (roleid, screenid, readflag, writeflag, deleteflag, createdby, modifiedby)
+select r.roleid, s.screenid, true, v.write, v.write, 'setup', 'setup'
 from _secure.role r
 join _arch.screen s on s.urladdress = v.url
 , (values
