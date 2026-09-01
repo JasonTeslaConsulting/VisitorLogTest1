@@ -184,4 +184,11 @@ existing RLS.
 
 ## Deviations
 
-None.
+Everything shipped exactly as specified: all four files created, every export mapped to camelCase
+(`RawX` local, `mapX` mappers) matching `visitor.ts`'s convention rather than the framework
+service's raw passthrough, `addPortalUser` hand-rolled (not wrapping the framework's `addUser`,
+whose `authuserid` param is typed required) with the single-organization lookup, `deactivateUser`
+leaving role assignments untouched. VERIFY passed clean after one `prettier --write` pass on
+`users.ts` (the subagent's output); no other retry was needed. No live browser check — this is a
+foundation unit with no page or route.
+
