@@ -240,7 +240,12 @@ export async function createVisit(
 type UntypedRpc = (
   fn: string,
 ) => Promise<{ data: unknown; error: { message: string } | null }>;
-const rpc = supabase.rpc.bind(supabase) as unknown as UntypedRpc;
+// A function wrapper, not a bound reference captured at module load — `supabase` is a lazy Proxy
+// that reads appConfig on first property access (client.ts), and this module is imported eagerly
+// by the route registry's import.meta.glob before appConfig.initialize() resolves. Accessing
+// `supabase.rpc` at module scope (`supabase.rpc.bind(supabase)`) crashed the app on every route
+// before React ever mounted; deferring the access into the call itself keeps it lazy.
+const rpc: UntypedRpc = (fn) => (supabase.rpc as unknown as UntypedRpc)(fn);
 
 export async function listVisitHosts(): Promise<VisitHostOption[]> {
   const { data, error } = await rpc("list_visit_hosts");
