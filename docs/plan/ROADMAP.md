@@ -9,7 +9,7 @@
 
 ## Progress
 
-2 / 8 units merged to origin/main.
+3 / 8 units merged to origin/main.
 
 ## Build order
 
@@ -17,22 +17,21 @@
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | U001 | Visitor domain foundation | infra | — | merged | ✅ | — | — |
 | 2 | U002 | Public visitor registration | form | `/register` | merged | ✅ | U001 | — |
-| 3 | U003 | My visits | datatable | `/visits` | spec-ready | — | U001 | — |
-| 4 | U004 | All visits | datatable | `/visits/manager` | waiting-on-deps | — | U003 | — |
-| 5 | U005 | On site today | dashboard | `/visits/today` | waiting-on-deps | — | U003 | — |
+| 3 | U003 | My visits | datatable | `/visits` | merged | ✅ | U001 | — |
+| 4 | U004 | All visits | datatable | `/visits/manager` | draft | — | U003 | — |
+| 5 | U005 | On site today | dashboard | `/visits/today` | draft | — | U003 | — |
 | 6 | U006 | Users domain foundation | infra | — | draft | — | — | — |
 | 7 | U007 | User management | datatable | `/admin/users` | waiting-on-deps | — | U006 | — |
 | 8 | U008 | Roles & permissions | form | `/admin/roles` | waiting-on-deps | — | U007 | — |
 
 ## Ready to build now
 
-- U003 — My visits (`docs/plan/units/003-my-visits.md`)
+- U004 — All visits (`docs/plan/units/004-all-visits.md`)
+- U005 — On site today (`docs/plan/units/005-on-site-today.md`)
 - U006 — Users domain foundation (`docs/plan/units/006-users-domain-foundation.md`)
 
 ## Blocked
 
-- U004 — All visits — waiting on dependencies
-- U005 — On site today — waiting on dependencies
 - U007 — User management — waiting on dependencies
 - U008 — Roles & permissions — waiting on dependencies
 
