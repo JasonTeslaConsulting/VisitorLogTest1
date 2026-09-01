@@ -247,4 +247,23 @@ consuming page's own route guard.
 
 ## Deviations
 
-None.
+- **The four `public` schema RPCs (`list_visit_hosts`, `list_visit_purposes`,
+  `list_equipment_item_types`, `get_visitor_policy_text`) are not yet in
+  `src/integrations/supabase/types.ts`.** `docs/plan/db-setup.md`'s SQL for them had not been run
+  against the database as of this build (the fourth one, `get_visitor_policy_text`, was added to
+  that doc *after* the DB setup pass that preceded this unit). `src/services/visitor.ts` adds a
+  small file-local `UntypedRpc` re-typing (using `unknown`, never `any`) around `supabase.rpc` so
+  these four calls compile ahead of regeneration. Once `docs/plan/db-setup.md` §3 is run and `npm
+  run gen-supabase-types` picks the functions up, drop `UntypedRpc` and call `supabase.rpc(...)`
+  directly — the four exported functions' signatures don't change.
+- **`get_visitor_policy_text`'s return column names (`settingname`, `settingvalue`) are inferred,
+  not confirmed against a live schema** — `docs/plan/db-setup.md` defines this RPC's SQL (so the
+  names are pinned there), but nothing has executed it yet. Verify when U002 builds and calls
+  `getPolicyText()` end to end.
+- The known anon-insert audit-column risk in `createVisit` (flagged in `## Data source` above,
+  originating in `docs/plan/db-setup.md` §2) is unchanged — still to be verified at U002, not
+  something this unit could resolve on its own.
+- Everything else shipped exactly as specified: all five files created, `roles.ts` modified as
+  planned, no barrel edits, no embedding of host/purpose names. VERIFY passed clean on the first
+  attempt (typecheck, lint, format, `docs:arch`/`docs:plan` after regeneration, build); no retry
+  was needed.
