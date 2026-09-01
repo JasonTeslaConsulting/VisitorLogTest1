@@ -9,15 +9,15 @@
 
 ## Progress
 
-0 / 8 units merged to origin/main.
+1 / 8 units merged to origin/main.
 
 ## Build order
 
 | # | Id | Unit | Kind | Route | Status | Merged | Depends on | Branch |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | U001 | Visitor domain foundation | infra | — | spec-ready | — | — | — |
-| 2 | U002 | Public visitor registration | form | `/register` | waiting-on-deps | — | U001 | — |
-| 3 | U003 | My visits | datatable | `/visits` | waiting-on-deps | — | U001 | — |
+| 1 | U001 | Visitor domain foundation | infra | — | merged | ✅ | — | — |
+| 2 | U002 | Public visitor registration | form | `/register` | spec-ready | — | U001 | — |
+| 3 | U003 | My visits | datatable | `/visits` | draft | — | U001 | — |
 | 4 | U004 | All visits | datatable | `/visits/manager` | waiting-on-deps | — | U003 | — |
 | 5 | U005 | On site today | dashboard | `/visits/today` | waiting-on-deps | — | U003 | — |
 | 6 | U006 | Users domain foundation | infra | — | draft | — | — | — |
@@ -26,13 +26,12 @@
 
 ## Ready to build now
 
-- U001 — Visitor domain foundation (`docs/plan/units/001-visitor-domain-foundation.md`)
+- U002 — Public visitor registration (`docs/plan/units/002-public-visitor-registration.md`)
+- U003 — My visits (`docs/plan/units/003-my-visits.md`)
 - U006 — Users domain foundation (`docs/plan/units/006-users-domain-foundation.md`)
 
 ## Blocked
 
-- U002 — Public visitor registration — waiting on dependencies
-- U003 — My visits — waiting on dependencies
 - U004 — All visits — waiting on dependencies
 - U005 — On site today — waiting on dependencies
 - U007 — User management — waiting on dependencies
@@ -40,5 +39,5 @@
 
 ## Validation
 
-No errors.
+- docs/plan/units/002-public-visitor-registration.md: route `/register` already exists in docs/architecture/inventory.md
 

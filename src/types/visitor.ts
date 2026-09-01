@@ -66,3 +66,10 @@ export type ListVisitsParams = {
   hostId?: string;
   sort?: { field: string; direction: "asc" | "desc" } | null;
 };
+
+export type CountryDialCodeOption = {
+  countryDialId: string;
+  countryDialCode: string;
+  countryName: string;
+  isDefault: boolean;
+};

@@ -173,6 +173,36 @@ Run this after Section 5 (it depends on the `VisitorLog` configuration group exi
 (`PrivacyPolicyText`/`VideoConsentText`) into `{ privacyPolicyText, videoConsentText }` — it never
 queries `_sysconfig` directly.
 
+A fifth RPC covers the mobile-number country dial code for U002's public form.
+`countrydialcode` has a real FK to `country` (`fk_countrydialcode_country`), so this one embeds
+safely once inside the RPC's own definer context — the RPC boundary is what anon actually needs,
+not the embed:
+
+```sql
+create or replace function public.list_country_dial_codes()
+returns table (
+  countrydialid uuid,
+  countrydialcode text,
+  countryname text,
+  isdefault boolean
+)
+language sql
+security definer
+set search_path = public
+as $$
+  select cdc.countrydialid, cdc.countrydialcode, c.countryname, c.isdefault
+  from _common.countrydialcode cdc
+  join _common.country c on c.countryid = cdc.countryid
+  order by c.isdefault desc, c.countryname;
+$$;
+
+grant execute on function public.list_country_dial_codes() to anon, authenticated;
+```
+
+`listCountryDialCodes()` (U002, added to U001's `src/services/visitor.ts`) calls this and maps it
+to `{ countryDialId, countryDialCode, countryName, isDefault }[]`; the form pre-selects the row
+where `isDefault` is true.
+
 ## 4. Reference data — visit purposes and equipment item types
 
 ```sql
