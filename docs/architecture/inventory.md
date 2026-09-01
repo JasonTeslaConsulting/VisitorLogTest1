@@ -18,6 +18,7 @@ as reference. Framework files are read-only in a portal and imported via
 | --- | --- | --- | --- | --- | --- |
 | `/home` | **app** | authenticated | — | default | src/routes/modules/home.routes.tsx |
 | `/register` | **app** | public | — | none | src/routes/modules/register.routes.tsx |
+| `/visits` | **app** | authenticated | ROLES.STAFF | default | src/routes/modules/visits.routes.tsx |
 | `/` | framework | public | — | none | platform/src/routes/modules/auth.routes.tsx |
 | `/sample` | framework | public | — | default | platform/src/routes/modules/samples.routes.tsx |
 | `/sample/overview` | framework | public | — | default | platform/src/routes/modules/samples.routes.tsx |
@@ -158,6 +159,7 @@ as reference. Framework files are read-only in a portal and imported via
 
 - `src/pages/Home.tsx`
 - `src/pages/Register.tsx`
+- `src/pages/Visits.tsx`
 
 **Framework (reference — read-only, `@framework/*`)**
 
