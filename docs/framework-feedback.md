@@ -11,11 +11,20 @@ delete the items you've handled. Add to it; don't let it silently grow stale.
 Each item: where the problem is, what happened (with evidence), a suggested fix, and why it
 matters beyond this one app.
 
-**⚠ Items 9 and 11 are higher severity than the rest.** Item 9 fails a required
+**⚠ Items 9, 11, 13 and 14 are higher severity than the rest.** Item 9 fails a required
 (non-`continue-on-error`) GitHub Actions step on every route-bearing unit's PR, not only this
 app's. Item 11 already crashed this app's every page in front of the user before it was found and
 fixed — it's fixed here, but nothing stops the same pattern in the next app built from this
-skeleton. Prioritize both.
+skeleton. Item 13 ships every portal's public pages with no page padding at all, and a page cannot
+correctly fix it itself. Item 14 is the highest-value one for non-frontend users: the sample
+library exists precisely so they never need to know words like `aside-left`, and nothing currently
+makes Claude actually show it to them.
+
+**Items 13–18 came from a user feedback pass at the end of the build**, after all seven units had
+shipped — they are things that only became visible once someone non-expert looked at the finished
+app and the transcript. Several (14, 15, 17, 18) are about *how Claude communicates with a
+non-technical user* rather than about code, which is a category the skills currently under-specify
+almost entirely.
 
 ---
 
@@ -65,6 +74,16 @@ client-side redirect and an extra file that does nothing but redirect.
 have `AUTH.REDIRECT_PATH` read `appConfig.config.app.landingPath ?? "/home"` instead of a literal,
 and update the four call sites' doc comments accordingly. `app:init` could prompt for it the same
 way it prompts for other `app.json` fields.
+
+**Reinforced by the end-of-build feedback pass:** the user's position is that **this app should not
+have a `/home` route at all** — not a `/home` that redirects. The workaround above still leaves a
+real route, a real page file, and a `docs/features/home.md` describing a page that does nothing.
+So the fix needs to make `/home` genuinely *deletable* by a portal, not merely retargetable:
+`landingPath` must be readable everywhere `/home` is currently assumed, and `src/routes/modules/
+home.routes.tsx` + `src/pages/Home.tsx` (both `seeded`, per `platform/framework.json`) must be
+safe for a portal to delete outright without breaking `Navbar`'s home icon, `Login`'s
+post-auth redirect, or `ProtectedRoute`'s access-denied fallback. Worth confirming `app:init`
+doesn't re-seed them either.
 
 ---
 
@@ -385,6 +404,197 @@ the append-only convention for `src/types/index.ts`'s barrel and `docs/architect
 A **correction** to already-written SQL (a bug fix, not new SQL) is a different case and can still
 edit the section it's fixing — the append-only rule is specifically about *new* statements that
 weren't there before, not about leaving a known-wrong statement in place.
+
+---
+
+## 13. ⚠ `layout: "none"` drops ALL page chrome, not just the navbar — public pages have zero padding
+
+**Where:** `platform/src/routes/AppRouter.tsx`'s `withLayout()`, plus `platform/src/types/routing.ts`'s
+`RouteLayout` type (`"default" | "none"`).
+
+**What happened:** the user reported the public registration form (`/register`, `layout: "none"`)
+has no padding. Confirmed visually at both desktop and 375px: **the page title sits flush against
+the top edge of the viewport, and at 375px the card runs edge-to-edge with no side gutter at all.**
+(The card's *inner* padding still works — `Card` owns that — so fields aren't touching glass; it's
+the page gutter that's entirely missing.)
+
+The cause is structural, not a page bug:
+
+```js
+const withLayout = (r: AppRoute): RouteObject => {
+  const leaf: RouteObject = { path: r.path, element: r.element };
+  return r.layout === "none" ? leaf : { element: <PageLayout />, children: [leaf] };
+};
+```
+
+`layout: "none"` returns the bare leaf, skipping `PageLayout` **entirely**. But `PageLayout` owns
+four separate things, and its own comment calls itself "the single owner of page-edge padding
+(DESIGN.md §7) and max content width":
+
+1. `<Navbar />` — the only one a public page actually wants gone
+2. `px-4 sm:px-6 py-6 sm:py-8` — page-edge padding
+3. `min-h-screen bg-background` — the page surface
+4. `max-w-(--container-max)` — content width cap
+
+So `layout` conflates "no navbar" with "no page chrome whatsoever," and there is no third option.
+
+**Why every portal hits this, not just this app:** the framework's own sample tells public pages to
+route this way — `platform/src/samples/samples/FormPagePublic.tsx`'s header comment says *"A real
+copy renders with **no navbar** (`realLayout: "none"`, `realAccess: "public"` …)"*, and
+`build-from-sample`'s step 4 says to use `realLayout` verbatim. Any portal following that guidance
+produces an unpadded public page. DESIGN.md §7 assigns page-edge padding to `PageLayout` and
+`pages-rules.md` forbids a page setting its own, so a page **cannot** correctly compensate — the
+fix has to be in the framework.
+
+**Suggested fix:** split the two concerns. Either add a third `RouteLayout` value (e.g. `"bare"` —
+padding, background and width cap, but no navbar) and point the public samples at it, or keep
+`layout` for the navbar only and always wrap in the padding/background/width shell. The second is
+cleaner but changes existing `layout: "none"` behavior, so it needs a deliberate call. Whichever
+way, update `FormPagePublic.tsx`/`ConfirmationPageSimple.tsx`'s `realLayout` guidance to match, or
+portals will keep copying the broken value.
+
+---
+
+## 14. Nothing tells Claude to *show* the user the sample/template gallery and let them choose
+
+**Where:** `.claude/skills/spec-page/SKILL.md` Round 1, and `.claude/skills/build-from-sample/SKILL.md`.
+
+**What happened:** across seven units, Claude picked every template by silent reasoning ("split-card
+fits a stats+list dashboard") and never once showed the user what the options looked like. The user
+had to discover the problem themselves and ask for `ratio: "aside-left"` **by name** — which is
+exactly the framework-internal vocabulary the sample library exists so that users never need. Their
+words: *"others believe that other users/developers may not know/should not know that level of
+detail, that's why we make so many samples to begin with."*
+
+Two separate failures here, and the framework should fix both:
+
+**(a) The existing instruction is too weak, and was not followed.** `spec-page` Round 1 says
+*"Mention that live previews exist at `/sample/templates` … if the user wants to look before
+choosing."* Claude never mentioned it, in any round, for any unit. A soft "mention if they want" is
+easy to skip; it should be a required step with a concrete action.
+
+**(b) `build-from-sample` was never invoked at all**, even though `build-datatable` § "The three
+table samples" points straight at it and it owns the "no sample matches" ladder — including
+*"say which rung you are on."* Nothing in `spec-page`'s flow routes into it, so it only fires if
+the user names a sample first, which a user who doesn't know the samples exist will never do.
+
+**Suggested fix:** make Round 1 of `spec-page` actually *show* the options rather than reason about
+them privately:
+
+1. Start the dev server (`preview_start`) and give the user real URLs — "have a look at
+   `localhost:8080/sample` and `localhost:8080/sample/templates`, tell me which is closest to what
+   you want." The gallery's props toolbar makes each configuration linkable (`?width=narrow`), so
+   the user can compare arrangements without knowing any prop names.
+2. Propose a default with reasoning, but **ask them to confirm or pick a different one** — never
+   settle it silently. Frame the options by what they look like and are for, not by prop values.
+3. Route into `build-from-sample`'s ladder explicitly and state the rung out loud, as that skill
+   already requires.
+
+This is the single highest-value fix in this document for non-frontend users: it converts a
+decision Claude currently makes invisibly into one the user makes by looking at pictures.
+
+---
+
+## 15. Nothing tells Claude to escalate database work to whoever administers Supabase
+
+**Where:** `plan-app`, `build-app`, and whatever produces a `db-setup.md`-style doc (see items 7
+and 12).
+
+**What happened:** across this build Claude repeatedly wrote things like *"a human must add
+`_visitor` to Supabase's exposed schemas"* or *"anon needs INSERT granted"* — factually correct,
+but never saying **who that human is**. The user pointed out that someone using Claude to generate
+an app "may not understand what's happening underneath with Supabase at all." They may not know
+what a schema, a grant, an RPC, or RLS is, may not have dashboard access, and may not realize this
+is a task to hand to someone else rather than something Claude forgot to do.
+
+**Suggested fix:** wherever a skill emits a DB prerequisite, require phrasing that names the
+escalation path and the reason, in plain language — e.g. *"This needs someone with admin access to
+your Supabase project. Send them `docs/plan/db-setup.md` §1. Neither you nor I can do this from the
+app — it's a database permission setting."* Same for new RPCs, grants, and exposed schemas. The
+existing `docs/PREFLIGHT.md` has a "Team alignment" section that could carry a standing "who owns
+the database" line the plan then refers back to by name.
+
+---
+
+## 16. The PR flow has no "solo developer with a remote" mode, and its human/Claude split is undocumented
+
+**Where:** `.claude/skills/build-app/SKILL.md` § "PUSH AND PR", and `docs/plan/README.md`'s
+"No remote configured yet" section.
+
+**What happened:** the user asked, reasonably, *"are humans still expected to accept the PR and
+merge into main ourselves? Or are you going to do it?"* — and noted the real cost: with work spread
+across unmerged branches, running the app locally on `main` shows none of it, which is confusing
+for anyone who doesn't think in branches. Mid-session they asked Claude to merge everything
+directly, and the rest of the build ran that way instead.
+
+The skill only distinguishes **two** worlds: origin configured (open a PR, never auto-merge) and no
+origin at all (squash-merge to local `main`). There is no mode for the common real case: *a remote
+exists, but one person is building, and they want to see their app work locally right now.* The
+"never auto-merge" rule is a sensible default for a team — it preserves the one human review
+checkpoint — but it is a **policy** choice, not a capability limit, and the skill never says so.
+
+Also undocumented anywhere a user would find it: what Claude can and cannot actually do.
+
+| Step | Claude | Needs |
+| --- | --- | --- |
+| Create/commit/push a branch | ✅ | git + remote |
+| Merge a branch into `main` and push | ✅ | git + remote (policy currently discourages) |
+| Create a **PR object** | ❌ | `gh` or `tea` installed **and** authenticated |
+| Merge a PR | ❌ | same, and `build-app` forbids it regardless |
+
+**Suggested fix:** add a third delivery mode, chosen at `plan-app`'s Round 6 alongside the gate
+policy — something like `delivery: pr | direct-to-main`. `direct-to-main` merges each verified unit
+straight to `main` even with a remote configured (the GATE step already served as the review, which
+is the same argument `docs/plan/README.md` already makes for the no-remote case). Document the
+capability table above in `docs/PREFLIGHT.md` so a user knows before starting whether they need to
+install `gh`, and state plainly that PRs exist to let **multiple developers** build concurrently —
+so a solo user can knowingly opt out instead of inheriting branch overhead they never wanted.
+
+---
+
+## 17. Claude's questions to the user use frontend jargon
+
+**Where:** `.claude/rules/clarifying-questions.md` (which governs question *budgets* but says
+nothing about question *language*), and every planning skill that calls `AskUserQuestion`.
+
+**What happened:** the user flagged phrasing like *"inline zod errors"* — understandable to them,
+but not to "someone who didn't build this framework or doesn't know frontend development." The same
+applies to plenty else Claude used in questions and summaries this session: RLS, queryKey
+invalidation, camelCase mapping, `staleTime` tiers, `expandMode`, side sheet vs modal, client-mode
+vs server-mode tables.
+
+The person answering these questions is often the one who knows the *business* (who hosts visitors,
+what reception needs) — not the stack. A question they can't parse gets a guessed answer, which is
+worse than no question.
+
+**Suggested fix:** add a "how to phrase a question" section to
+`.claude/rules/clarifying-questions.md`, since every planning skill already cites that file for
+budgets:
+
+- Describe the **outcome the user would see**, not the mechanism —
+  *"red error messages appear under each field"*, not *"inline zod errors"*;
+  *"a panel slides in from the right"*, not *"a side sheet"*;
+  *"only people you're hosting"*, not *"RLS scopes it by `is_current_host`"*.
+- Keep the technical term in parentheses **after** the plain description when it's useful for a
+  developer skimming — plain first, jargon second, never jargon alone.
+- Close every question set with an explicit invitation: *"ask me to explain anything that isn't
+  clear."* Currently the ceiling rules encourage wrapping up fast, with nothing balancing that
+  toward comprehension.
+
+---
+
+## 18. "the U003 spec" is ambiguous shorthand to anyone who hasn't read `docs/plan/README.md`
+
+**Where:** `.claude/skills/build-app/SKILL.md`'s GATE step, which tells Claude to show a "digest"
+of the spec but never to say where the spec lives.
+
+**What happened:** the user asked *"When you say e.g. 'U003 spec', which spec are you referring to?
+The docs inside docs/plan/units…?"* — correct, but they had to ask. Claude used the shorthand
+dozens of times without once naming the file.
+
+**Suggested fix:** have the GATE step name the path the first time per unit — *"Here's the spec I
+wrote to `docs/plan/units/003-my-visits.md`"* — so the user knows the artifact exists, where to
+read it in full, and what they're approving. Cheap, one clause, removes the guesswork.
 
 ---
 
