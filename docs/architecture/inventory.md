@@ -47,6 +47,7 @@ as reference. Framework files are read-only in a portal and imported via
 
 **This app**
 
+- `src/services/users.ts` — `listUsers`, `listAssignableRoles`, `addPortalUser`, `deactivateUser`, `assignRole`, `unassignRole`
 - `src/services/visitor.ts` — `listVisits`, `logVisitExit`, `createVisit`, `listVisitHosts`, `listVisitPurposes`, `listEquipmentItemTypes`, `getPolicyText`, `listCountryDialCodes`
 
 **Framework (reference — read-only, `@framework/*`)**
@@ -61,6 +62,8 @@ as reference. Framework files are read-only in a portal and imported via
 
 **This app**
 
+- `src/hooks/users/useUserMutations.ts` — `useAddPortalUser`, `useDeactivateUser`, `useAssignRole`, `useUnassignRole`
+- `src/hooks/users/useUsers.ts` — `useUsers`, `useAssignableRoles`
 - `src/hooks/visitor/useVisitLookups.ts` — `useVisitHosts`, `useVisitPurposes`, `useEquipmentItemTypes`, `usePolicyText`, `useCountryDialCodes`
 - `src/hooks/visitor/useVisitMutations.ts` — `useCreateVisit`, `useLogVisitExit`
 - `src/hooks/visitor/useVisits.ts` — `useVisits`
@@ -262,6 +265,7 @@ shorthand — `max-w-(--container-max)`, not `max-w-[1280px]`.
 
 **This app**
 
+- `src/types/users.ts` — `PortalUserRole`, `PortalUser`, `AssignableRole`, `AddPortalUserPayload`
 - `src/types/visitor.ts` — `VisitStatus`, `VisitEquipmentItem`, `Visit`, `VisitHostOption`, `VisitPurposeOption`, `EquipmentTypeOption`, `CreateVisitEquipmentInput`, `CreateVisitPayload`, `ListVisitsParams`, `CountryDialCodeOption`
 
 **Framework (reference — read-only, `@framework/*`)**
