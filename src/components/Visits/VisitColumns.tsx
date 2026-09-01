@@ -7,11 +7,17 @@ type GetVisitColumnsParams = {
   tab: "active" | "past";
   /** `visitPurposeId` -> display name, from `useVisitPurposes()`. */
   purposeNameById: Map<string, string>;
+  /** Inserts the Host column (after Organization, before Purpose) when true. */
+  showHost?: boolean;
+  /** `hostId` -> display name, from `useVisitHosts()`. Required when `showHost` is true. */
+  hostNameById?: Map<string, string>;
 };
 
 export function getVisitColumns({
   tab,
   purposeNameById,
+  showHost,
+  hostNameById,
 }: GetVisitColumnsParams): DataTableColumn<Visit>[] {
   const columns: DataTableColumn<Visit>[] = [
     {
@@ -25,6 +31,17 @@ export function getVisitColumns({
       header: "Organization",
       accessor: (row) => row.organization ?? "—",
     },
+  ];
+
+  if (showHost) {
+    columns.push({
+      id: "hostid",
+      header: "Host",
+      accessor: (row) => hostNameById?.get(row.hostId) ?? row.hostId ?? "—",
+    });
+  }
+
+  columns.push(
     {
       id: "visitpurposeid",
       header: "Purpose",
@@ -37,7 +54,7 @@ export function getVisitColumns({
       accessor: (row) => DateTimeUtils.formatDateTime(row.entryDate),
       sortable: true,
     },
-  ];
+  );
 
   if (tab === "past") {
     columns.push({

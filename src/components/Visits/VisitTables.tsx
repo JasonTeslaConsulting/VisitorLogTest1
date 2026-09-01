@@ -1,8 +1,20 @@
 import { useMemo, useState } from "react";
 import { PiSignOut, PiUsers } from "react-icons/pi";
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxFieldLabel,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+  ComboboxTrigger,
+  ComboboxValue,
+} from "@framework/components/ui/combobox";
 import { ConfirmDialog } from "@framework/components/ui/ConfirmDialog";
 import { DataTable } from "@framework/components/ui/datatable/DataTable";
 import { EmptyState } from "@framework/components/ui/EmptyState";
+import { FilterSheet } from "@framework/components/ui/FilterSheet";
 import { InfoTable } from "@framework/components/ui/InfoTable";
 import {
   Tabs,
@@ -13,10 +25,11 @@ import {
 import { toast } from "@framework/components/ui/toast";
 import { useAuth } from "@framework/contexts/AuthContext";
 import { useTableState } from "@framework/hooks/useTableState";
-import type { RowAction } from "@framework/types/table";
+import type { RowAction, TableState } from "@framework/types/table";
 import { getVisitColumns } from "@/components/Visits/VisitColumns";
 import {
   useEquipmentItemTypes,
+  useVisitHosts,
   useVisitPurposes,
 } from "@/hooks/visitor/useVisitLookups";
 import { useLogVisitExit } from "@/hooks/visitor/useVisitMutations";
@@ -79,7 +92,59 @@ function VisitDetailsPanel({
   );
 }
 
-export const VisitTables = () => {
+type VisitTablesProps = {
+  /**
+   * "mine" (default): the Staff-facing /visits page — unchanged from before this prop existed.
+   * "all": the Office Manager's /visits/manager page — adds a Host column and a per-tab host
+   * filter. RLS (`is_visitor_admin()`) is what actually widens the result set; this only changes
+   * what's requested and displayed.
+   */
+  scope?: "mine" | "all";
+};
+
+/**
+ * The host filter field inside a tab's `FilterSheet` — bound to that tab's own
+ * `draftFilters.hostId`/`setDraftFilter`, independent from the other tab's.
+ */
+function HostFilterField({
+  state,
+  hostOptions,
+}: {
+  state: TableState;
+  hostOptions: { value: string; label: string }[];
+}) {
+  const selected =
+    hostOptions.find((option) => option.value === state.draftFilters.hostId) ??
+    null;
+
+  return (
+    <Combobox
+      items={hostOptions}
+      value={selected}
+      onValueChange={(item) =>
+        state.setDraftFilter("hostId", item?.value ?? null)
+      }
+    >
+      <ComboboxFieldLabel>Host</ComboboxFieldLabel>
+      <ComboboxTrigger>
+        <ComboboxValue placeholder="Any host" />
+      </ComboboxTrigger>
+      <ComboboxContent>
+        <ComboboxInput placeholder="Search hosts" />
+        <ComboboxEmpty>No hosts found.</ComboboxEmpty>
+        <ComboboxList>
+          {(option: (typeof hostOptions)[number]) => (
+            <ComboboxItem key={option.value} value={option}>
+              {option.label}
+            </ComboboxItem>
+          )}
+        </ComboboxList>
+      </ComboboxContent>
+    </Combobox>
+  );
+}
+
+export const VisitTables = ({ scope = "mine" }: VisitTablesProps = {}) => {
   const { currentUser } = useAuth();
 
   const activeState = useTableState();
@@ -91,6 +156,8 @@ export const VisitTables = () => {
     perPage: activeState.resultsPerPage,
     search: activeState.searchTerm,
     sort: activeState.sort,
+    hostId:
+      scope === "all" ? (activeState.filters.hostId ?? undefined) : undefined,
   });
 
   const pastVisits = useVisits({
@@ -99,10 +166,16 @@ export const VisitTables = () => {
     perPage: pastState.resultsPerPage,
     search: pastState.searchTerm,
     sort: pastState.sort,
+    hostId:
+      scope === "all" ? (pastState.filters.hostId ?? undefined) : undefined,
   });
 
   const { data: purposes } = useVisitPurposes();
   const { data: equipmentTypes } = useEquipmentItemTypes();
+  // Rules of Hooks require this to be called unconditionally; Staff's /visits page (scope "mine")
+  // just doesn't use the result below. It shares the "visitHosts" query cache with the
+  // registration form, so the cost of the extra call is a cache hit, not a network request.
+  const { data: hosts } = useVisitHosts();
 
   const purposeNameById = useMemo(() => {
     const map = new Map<string, string>();
@@ -118,13 +191,43 @@ export const VisitTables = () => {
     return map;
   }, [equipmentTypes]);
 
+  const hostNameById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const host of hosts ?? [])
+      map.set(host.organizationUserId, host.fullName);
+    return map;
+  }, [hosts]);
+
+  const hostOptions = useMemo(
+    () =>
+      (hosts ?? []).map((host) => ({
+        value: host.organizationUserId,
+        label: host.fullName,
+      })),
+    [hosts],
+  );
+
+  const showHost = scope === "all";
+
   const activeColumns = useMemo(
-    () => getVisitColumns({ tab: "active", purposeNameById }),
-    [purposeNameById],
+    () =>
+      getVisitColumns({
+        tab: "active",
+        purposeNameById,
+        showHost,
+        hostNameById,
+      }),
+    [purposeNameById, showHost, hostNameById],
   );
   const pastColumns = useMemo(
-    () => getVisitColumns({ tab: "past", purposeNameById }),
-    [purposeNameById],
+    () =>
+      getVisitColumns({
+        tab: "past",
+        purposeNameById,
+        showHost,
+        hostNameById,
+      }),
+    [purposeNameById, showHost, hostNameById],
   );
 
   const logVisitExit = useLogVisitExit();
@@ -182,6 +285,22 @@ export const VisitTables = () => {
           expandMode="single"
           renderExpanded={renderExpanded}
           emptyState={<EmptyState icon={PiUsers} title="No active visits" />}
+          filterSheet={
+            showHost ? (
+              <FilterSheet
+                activeCount={activeState.activeFilterCount}
+                onClear={activeState.clearFilters}
+                onApply={activeState.applyFilters}
+                onDiscard={activeState.discardDraft}
+                canApply={activeState.isFilterDirty}
+              >
+                <HostFilterField
+                  state={activeState}
+                  hostOptions={hostOptions}
+                />
+              </FilterSheet>
+            ) : undefined
+          }
         />
       </TabsContent>
 
@@ -198,6 +317,19 @@ export const VisitTables = () => {
           expandMode="single"
           renderExpanded={renderExpanded}
           emptyState={<EmptyState icon={PiUsers} title="No past visits" />}
+          filterSheet={
+            showHost ? (
+              <FilterSheet
+                activeCount={pastState.activeFilterCount}
+                onClear={pastState.clearFilters}
+                onApply={pastState.applyFilters}
+                onDiscard={pastState.discardDraft}
+                canApply={pastState.isFilterDirty}
+              >
+                <HostFilterField state={pastState} hostOptions={hostOptions} />
+              </FilterSheet>
+            ) : undefined
+          }
         />
       </TabsContent>
 
